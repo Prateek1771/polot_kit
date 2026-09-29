@@ -150,6 +150,12 @@
   }
   body {
     @apply bg-background text-foreground;
+    overflow-x: clip; /* decorative glows / marquees never widen the page; clip keeps position: sticky working */
+  }
+  /* thin, token-coloured scrollbars: the default light-mode gray bars read as clutter */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in oklab, var(--foreground) 18%, transparent) transparent;
   }
   html {
     @apply font-sans;

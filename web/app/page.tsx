@@ -277,15 +277,15 @@ export default function Landing() {
               </div>
             ))}
           </Bezel>
-          <Bezel data-reveal className="md:col-span-12" inner="flex flex-col gap-6 p-7 md:flex-row md:items-center">
-            <div className="md:w-1/3">
+          <Bezel data-reveal className="md:col-span-12" inner="flex flex-col gap-6 p-7 xl:flex-row xl:items-center">
+            <div className="shrink-0 xl:w-72">
               <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground"><GitBranch className="size-5 text-primary" /> Tool gate</div>
               <h3 className="pk-display mt-3 text-2xl font-medium">No claim is filed on a hunch.</h3>
             </div>
-            <ol className="flex flex-1 flex-col gap-3 md:flex-row md:items-center">
+            <ol className="grid min-w-0 flex-1 grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
               {([[ClipboardText, "Fields read back", "policy •••••4821 · 2026-09-28"], [CheckCircle, "User confirms", "“Yes, that’s correct”"],
                 [ShieldCheck, "Jev gate ≥ 0.7", "fields match the user’s words"], [Robot, "Claim filed", "CLM-XXXXXX issued"]] as const).map(([Icon, t, d], i) => (
-                <li key={t} className="flex flex-1 items-center gap-3 rounded-[1.25rem] bg-foreground/[0.03] p-2.5 pr-4 ring-1 ring-foreground/[0.05]">
+                <li key={t} className="flex min-w-0 items-center gap-3 rounded-[1.25rem] bg-foreground/[0.03] p-2.5 pr-4 ring-1 ring-foreground/[0.05]">
                   <span className="grid size-9 shrink-0 place-items-center rounded-full bg-secondary text-secondary-foreground"><Icon className="size-[18px]" /></span>
                   <span className="min-w-0"><span className="block text-sm font-medium">{i + 1}. {t}</span><span className="block truncate text-xs text-muted-foreground">{d}</span></span>
                 </li>
