@@ -15,7 +15,7 @@
     "repository": {
       "url": "https://localhost/pilotkit/persistance_dev.git",
       "link_mode": "local-only",
-      "revision": "0901a981a2d70b88525c36ee91671fc15ee187aa"
+      "revision": "52b68bab3b07bd241b782d95051e9647879d5a67"
     }
   },
   "participants": [
@@ -27,8 +27,8 @@
       "sources": [
         {
           "path": "web/app/chat/page.tsx",
-          "line": 77,
-          "end_line": 86,
+          "line": 78,
+          "end_line": 87,
           "label": "send()"
         },
         {
@@ -60,8 +60,8 @@
       "sources": [
         {
           "path": "api/app/bot.py",
-          "line": 406,
-          "end_line": 441
+          "line": 407,
+          "end_line": 443
         },
         {
           "path": "api/app/bot.py",
@@ -75,13 +75,19 @@
       "id": "jev",
       "type": "external",
       "label": "Jev",
-      "sublabel": "Decisions API",
+      "sublabel": "via LiteLLM provider",
       "sources": [
         {
           "path": "api/app/jev.py",
-          "line": 23,
-          "end_line": 38,
+          "line": 59,
+          "end_line": 68,
           "label": "decide()"
+        },
+        {
+          "path": "api/app/jev.py",
+          "line": 30,
+          "end_line": 56,
+          "label": "JevProvider"
         }
       ]
     },
@@ -93,8 +99,8 @@
       "sources": [
         {
           "path": "api/app/llm.py",
-          "line": 30,
-          "end_line": 54
+          "line": 24,
+          "end_line": 55
         }
       ]
     },
@@ -316,6 +322,7 @@
       "title": "Jev decides",
       "items": [
         "One router call carries five questions per turn (bot.py:161-172)",
+        "Both Jev calls go through LiteLLM and land in the chat's Langfuse session (llm.py:16-34)",
         "The tool gate is a second Jev noul before any claim insert (bot.py:250-270)"
       ]
     },
@@ -323,8 +330,8 @@
       "dot": "emerald",
       "title": "The LLM talks",
       "items": [
-        "gpt-4o-mini only extracts fields and writes the reply (bot.py:146-153, 426)",
-        "The catalog is added to the prompt only on shop and coverage turns (bot.py:386-394)"
+        "gpt-4o-mini only extracts fields and writes the reply (bot.py:146-153, 428)",
+        "The catalog is added to the prompt only on shop and coverage turns (bot.py:387-395)"
       ]
     },
     {

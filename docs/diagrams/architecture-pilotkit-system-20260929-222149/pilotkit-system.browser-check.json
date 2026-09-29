@@ -6,11 +6,11 @@
   "status": "pass",
   "visualReview": "not-requested",
   "provenance": "current",
-  "deliveryReceiptId": "26c1c281-a336-46f5-977d-4d1ebc27f09c",
+  "deliveryReceiptId": "68e626e3-dba1-4202-becf-95eebd1d35d4",
   "artifact": {
     "path": "D:\\personal\\persistance_dev\\docs\\diagrams\\architecture-pilotkit-system-20260929-222149\\pilotkit-system.html",
-    "sha256": "d9d65ca90b3fc73a73a0154765ce2c58949a0f17a0abb76cb9c026e2a5f10488",
-    "bytes": 771649
+    "sha256": "abacd4081d46c357456c5a0bf4abd1b5b6f59caf7bcc131551b68aa9e3e6b21d",
+    "bytes": 772080
   },
   "state": {
     "detail": "read",

@@ -10,7 +10,7 @@
     "repository": {
       "url": "https://localhost/pilotkit/persistance_dev.git",
       "link_mode": "local-only",
-      "revision": "0901a981a2d70b88525c36ee91671fc15ee187aa"
+      "revision": "52b68bab3b07bd241b782d95051e9647879d5a67"
     }
   },
   "components": [
@@ -106,14 +106,14 @@
       "sources": [
         {
           "path": "api/app/bot.py",
-          "line": 406,
-          "end_line": 441,
+          "line": 407,
+          "end_line": 443,
           "label": "chat_turn"
         },
         {
           "path": "api/app/bot.py",
-          "line": 359,
-          "end_line": 373,
+          "line": 360,
+          "end_line": 374,
           "label": "graph"
         }
       ]
@@ -122,7 +122,7 @@
       "id": "jev",
       "type": "external",
       "label": "Jev Decisions API",
-      "sublabel": "OpenRouter alpha",
+      "sublabel": "OpenRouter /alpha/decisions",
       "pos": [
         1154,
         230
@@ -135,31 +135,37 @@
       "sources": [
         {
           "path": "api/app/jev.py",
-          "line": 15,
-          "end_line": 38,
-          "label": "decide()"
+          "line": 30,
+          "end_line": 56,
+          "label": "JevProvider"
         }
       ]
     },
     {
       "id": "litellm",
       "type": "backend",
-      "label": "LiteLLM client",
-      "sublabel": "app/llm.py",
+      "label": "LiteLLM",
+      "sublabel": "every Jev + LLM call",
       "pos": [
-        815,
+        805,
         60
       ],
       "size": [
-        150,
+        170,
         64
       ],
       "sources": [
         {
           "path": "api/app/llm.py",
-          "line": 19,
-          "end_line": 54,
-          "label": "complete / stream"
+          "line": 16,
+          "end_line": 34,
+          "label": "session + acall"
+        },
+        {
+          "path": "api/app/jev.py",
+          "line": 59,
+          "end_line": 68,
+          "label": "decide() via litellm"
         }
       ]
     },
@@ -179,7 +185,7 @@
       "sources": [
         {
           "path": "api/app/llm.py",
-          "line": 6,
+          "line": 7,
           "label": "LLM_MODEL"
         }
       ]
@@ -200,8 +206,8 @@
       "sources": [
         {
           "path": "api/app/llm.py",
-          "line": 8,
-          "end_line": 12,
+          "line": 9,
+          "end_line": 13,
           "label": "langfuse_otel"
         },
         {
@@ -326,17 +332,18 @@
       "variant": "emphasis"
     },
     {
-      "id": "decide",
+      "id": "calls",
       "from": "bot",
-      "to": "jev",
-      "label": "decide() router + gate",
+      "to": "litellm",
+      "label": "decide() · extract · reply",
       "variant": "emphasis"
     },
     {
-      "id": "reply",
-      "from": "bot",
-      "to": "litellm",
-      "label": "stream reply"
+      "id": "decide",
+      "from": "litellm",
+      "to": "jev",
+      "label": "jev/ custom provider",
+      "variant": "emphasis"
     },
     {
       "id": "generate",
@@ -348,7 +355,7 @@
       "id": "trace",
       "from": "litellm",
       "to": "langfuse",
-      "label": "OTEL traces",
+      "label": "OTEL · per chat session",
       "variant": "dashed"
     },
     {
@@ -395,17 +402,17 @@
       "title": "Jev decides, the LLM talks",
       "items": [
         "One Jev call per turn answers intent, injection, needs-human, PII, confirms (bot.py:161-172)",
-        "A Jev noul tool gate guards the claim insert (bot.py:250-270)",
-        "gpt-4o-mini writes replies and extracts fields; plans are picked in code (bot.py:96-106)"
+        "Jev runs through LiteLLM as a custom provider, so it is traced like the LLM (jev.py:30-68)",
+        "A Jev noul tool gate guards the claim insert; plans are picked in code (bot.py:250-270)"
       ]
     },
     {
       "dot": "emerald",
       "title": "Test Lab in the worker",
       "items": [
-        "run_suite_job runs 5 simulated chats at once through the same chat_turn() (sim.py:65-80)",
-        "Simulated users call Jev next_move and LiteLLM for their messages (sim.py:17-60)",
-        "judge_job grades with a Jev rubric and writes scores (judge.py:18-63)"
+        "run_suite_job runs 5 simulated chats at once through the same chat_turn() (sim.py:66-81)",
+        "Simulated users' Jev next_move and messages also go through LiteLLM (sim.py:17-62)",
+        "judge_job grades with a Jev rubric and writes scores (judge.py:18-64)"
       ]
     },
     {

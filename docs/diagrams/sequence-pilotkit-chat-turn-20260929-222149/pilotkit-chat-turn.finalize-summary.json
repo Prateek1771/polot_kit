@@ -7,13 +7,13 @@
   "quality": "showcase",
   "specification": {
     "path": "D:\\personal\\persistance_dev\\docs\\diagrams\\sequence-pilotkit-chat-turn-20260929-222149\\candidate.json",
-    "sha256": "336513e21477d7b1d980a65a168370f29c2662a7c8d0f2f6cb14efad8579e0ba",
-    "bytes": 7693
+    "sha256": "238cdf9641b9c201bfa74bb59ee7f2bb1c26cd6787c41675389f6980ae298b22",
+    "bytes": 8285
   },
   "artifact": {
     "path": "D:\\personal\\persistance_dev\\docs\\diagrams\\sequence-pilotkit-chat-turn-20260929-222149\\pilotkit-chat-turn.html",
-    "sha256": "7cc1e065fbcbe31fb99bd14c2a928570fa8db8d14a1554daab248aee797d6081",
-    "bytes": 765373
+    "sha256": "12ef2208505eb161dab673d7b0d2b9d2895baf731b93259e5c0678df656e761f",
+    "bytes": 765585
   },
   "gates": {
     "validate": "pass",
@@ -43,5 +43,5 @@
     "noticeText": null
   },
   "visualReview": "not-requested",
-  "durationMs": 6708
+  "durationMs": 5095
 }

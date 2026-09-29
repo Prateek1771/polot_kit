@@ -10,7 +10,7 @@
     "repository": {
       "url": "https://localhost/pilotkit/persistance_dev.git",
       "link_mode": "local-only",
-      "revision": "0901a981a2d70b88525c36ee91671fc15ee187aa"
+      "revision": "52b68bab3b07bd241b782d95051e9647879d5a67"
     }
   },
   "lanes": [
@@ -145,8 +145,8 @@
         },
         {
           "path": "api/app/sim.py",
-          "line": 65,
-          "end_line": 80
+          "line": 66,
+          "end_line": 81
         }
       ]
     },
@@ -177,13 +177,13 @@
       "sources": [
         {
           "path": "api/app/sim.py",
-          "line": 43,
-          "end_line": 50
+          "line": 44,
+          "end_line": 51
         },
         {
           "path": "api/app/bot.py",
-          "line": 406,
-          "end_line": 441
+          "line": 407,
+          "end_line": 443
         }
       ]
     },
@@ -198,8 +198,8 @@
       "sources": [
         {
           "path": "api/app/sim.py",
-          "line": 52,
-          "end_line": 61
+          "line": 53,
+          "end_line": 62
         },
         {
           "path": "api/app/data/insurance.yaml",
@@ -220,7 +220,7 @@
         {
           "path": "api/app/judge.py",
           "line": 18,
-          "end_line": 39
+          "end_line": 40
         }
       ]
     },
@@ -240,8 +240,8 @@
         },
         {
           "path": "api/app/judge.py",
-          "line": 50,
-          "end_line": 63,
+          "line": 51,
+          "end_line": 64,
           "label": "write scores"
         }
       ]
@@ -274,7 +274,7 @@
         {
           "path": "api/app/sim.py",
           "line": 31,
-          "end_line": 38
+          "end_line": 39
         }
       ]
     }
@@ -372,8 +372,8 @@
       "dot": "violet",
       "title": "Jev plays both sides",
       "items": [
-        "Simulated users pick their next move with a Jev choice (sim.py:52-61)",
-        "The judge asks all rubric questions in one Jev request (judge.py:30-35)"
+        "Simulated users pick their next move with a Jev choice (sim.py:53-62)",
+        "The judge asks all rubric questions in one Jev request (judge.py:31-36)"
       ]
     },
     {
@@ -381,7 +381,7 @@
       "title": "LLM only explains",
       "items": [
         "gpt-4o-mini writes persona messages (sim.py:17-24)",
-        "It explains failed criteria only, never grades (judge.py:40-49)"
+        "It explains failed criteria only, never grades (judge.py:41-50)"
       ]
     },
     {

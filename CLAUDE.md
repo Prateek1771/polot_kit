@@ -5,7 +5,7 @@ Showcase project for Persistence.dev: the **CoverWise Assistant** (codename Clai
 - TypeSafe **Jev** (`typesafe/jev-1.13`, via the OpenRouter Decisions API) makes every typed decision.
 - OpenAI `gpt-4o-mini` (through LiteLLM) writes the text.
 
-Design and rationale are in `PILOTKIT.md`; read it before changing behaviour.
+Design and rationale are in `docs/PILOTKIT.md`; read it before changing behaviour.
 
 ## Layout
 ```
@@ -13,8 +13,10 @@ api/            FastAPI + LangGraph backend (Python 3.12, uv)
   app/main.py     routes: /chat (SSE), /conversations, /runs, /reviews, /compare, /calibration, /catalog
   app/bot.py      LangGraph: router (Jev) -> new_claim|tool_gate|status|identify|my_policy|shop|coverage|refuse|handoff|clarify;
                   pick_plans()/named_plans() pure code; chat_turn() streams a reply
-  app/jev.py      decide(state, questions) -> Jev answers (+ _meta cost/latency). Only Jev entry point.
-  app/llm.py      litellm complete()/stream() (LLM_MODEL=gpt-4o-mini -> OPENAI_API_KEY); Langfuse "langfuse_otel" callback when keys are set
+  app/jev.py      decide(state, questions, name) -> Jev answers (+ _meta cost/latency). Only Jev entry point.
+                  JevProvider: LiteLLM custom provider `jev/<model>` -> /api/alpha/decisions, so Jev is traced like the LLM
+  app/llm.py      acall()/complete()/stream(): every LiteLLM call, Jev included (LLM_MODEL=gpt-4o-mini -> OPENAI_API_KEY);
+                  Langfuse "langfuse_otel" callback when keys are set; session(conv_id) tags all calls with the chat's session
   app/sim.py      simulated users (Jev next_move + LLM message), run_suite()
   app/judge.py    Jev rubric -> triage() pass/fail/review; the LLM explains failures only
   app/worker.py   arq jobs: run_suite_job, judge_job
@@ -44,6 +46,7 @@ docker-compose.yml  postgres, redis, api, worker, web
 
 ## Conventions
 - **Jev decides, the LLM talks.** Any yes/no, category or rating the code branches on goes to Jev as a question in `insurance.yaml`. Don't prompt-and-parse an LLM for it.
+- Every Jev and LLM call goes through LiteLLM (`jev.decide` or `llm.complete/stream`) with a `name=`, so it shows in Langfuse as a named generation. Never call the Decisions API or OpenAI directly. A new entry point (a route, a job) calls `llm.session(conv_id)` first.
 - Jev can't do arithmetic, dates or text generation. Compute latency and cost in code, and use the LLM for extraction and explanations.
 - Thresholds live in `insurance.yaml` (`pass 0.7 / fail 0.3`). Between the two is the human review queue. There's no review table: the queue is `score where verdict='review' and human_label is null`.
 - Live chats and simulated chats share one code path, `bot.chat_turn()`. Don't fork it.

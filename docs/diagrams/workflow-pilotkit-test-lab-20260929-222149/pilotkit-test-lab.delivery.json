@@ -1,17 +1,17 @@
 {
   "schemaVersion": 1,
-  "receiptId": "269ef280-d0cf-4305-ac61-b53bbb09c08d",
+  "receiptId": "af8f18a7-78a7-4a3d-b22d-074e53ec1a9b",
   "status": "current",
   "command": "deliver",
   "type": "workflow",
   "input": "D:\\personal\\persistance_dev\\docs\\diagrams\\workflow-pilotkit-test-lab-20260929-222149\\candidate.json",
   "output": "D:\\personal\\persistance_dev\\docs\\diagrams\\workflow-pilotkit-test-lab-20260929-222149\\pilotkit-test-lab.html",
   "specification": {
-    "sha256": "b70eb206d1f4ba88760a43e81a4a2747299c5381e126aecb974a0907dbdfe039",
-    "bytes": 8347
+    "sha256": "b5a098d92ade19f397126abefee29fe1f7440c13f9a1e42a9f00022ddaad9a23",
+    "bytes": 8744
   },
   "artifact": {
-    "sha256": "e8714aa4091aedd4698bfb438734666c17574d1539a73e9fc259a7fd26c0372b",
+    "sha256": "360fcc3fa457fbe7845520d60e1066f62fa6a5fd78f184236972751464d69246",
     "bytes": 770023
   }
 }

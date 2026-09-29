@@ -10,7 +10,7 @@
     "repository": {
       "url": "https://localhost/pilotkit/persistance_dev.git",
       "link_mode": "local-only",
-      "revision": "0901a981a2d70b88525c36ee91671fc15ee187aa"
+      "revision": "52b68bab3b07bd241b782d95051e9647879d5a67"
     }
   },
   "lanes": [
@@ -70,7 +70,7 @@
         },
         {
           "path": "api/app/judge.py",
-          "line": 23
+          "line": 24
         }
       ]
     },
@@ -86,8 +86,8 @@
       "sources": [
         {
           "path": "api/app/judge.py",
-          "line": 60,
-          "end_line": 63
+          "line": 61,
+          "end_line": 64
         }
       ]
     },
@@ -187,7 +187,7 @@
         {
           "path": "api/app/sim.py",
           "line": 31,
-          "end_line": 38
+          "end_line": 39
         }
       ]
     }
@@ -274,7 +274,7 @@
       "dot": "cyan",
       "title": "Status is a column",
       "items": [
-        "conversation.status is open, judging or judged (schema.sql:19); the simulator adds error (sim.py:37)",
+        "conversation.status is open, judging or judged (schema.sql:19); the simulator adds error (sim.py:38)",
         "Only an open conversation accepts new turns; /chat returns 409 otherwise (main.py:95-96)"
       ]
     },
@@ -282,7 +282,7 @@
       "dot": "violet",
       "title": "Memory drives the flows",
       "items": [
-        "Identity and claim progress live in conversation.state JSON, updated every turn (bot.py:437-440)",
+        "Identity and claim progress live in conversation.state JSON, updated every turn (bot.py:439-442)",
         "route() keeps these flows sticky until they finish (bot.py:62-85)"
       ]
     },

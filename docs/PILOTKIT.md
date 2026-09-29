@@ -95,23 +95,20 @@ flowchart LR
   CH -->|POST /chat, SSE stream| API[FastAPI]
   DB -->|REST + SSE| API
   API --> BOT[ClaimChat bot<br/>LangGraph]
-  BOT -->|router + tool gate| JV[Jev<br/>OpenRouter Decisions API]
-  BOT -->|replies, extraction| LL[LiteLLM<br/>gpt-4o-mini]
+  BOT -->|router + tool gate, replies, extraction| LL[LiteLLM<br/>app/llm.py]
+  LL -->|jev/ custom provider| JV[Jev<br/>OpenRouter /alpha/decisions]
+  LL -->|chat completions| OA[OpenAI<br/>gpt-4o-mini]
   BOT --> PG[(Postgres<br/>policy, claim, conversation)]
   KB[policy.md + catalog.yaml<br/>whole, in the prompt] --> BOT
   API -->|enqueue suites| R[(Redis / arq)]
   R --> WK[Worker]
   WK --> SIM[Simulated user<br/>LangGraph]
-  SIM -->|next_move| JV
-  SIM -->|messages| LL
+  SIM -->|next_move, messages| LL
   SIM -->|in-process or HTTP adapter| BOT
   WK --> J[Judge]
-  J -->|noul + score| JV
-  J -->|explain failures| LL
+  J -->|rubric, explain failures| LL
   J --> PG
-  BOT -. traces .-> LF[Langfuse]
-  SIM -. traces .-> LF
-  J -. traces .-> LF
+  LL -. OTEL: every Jev + LLM call, per chat session .-> LF[Langfuse]
 ```
 
 ### 6.2 Assistant graph (one user turn)
@@ -230,10 +227,10 @@ erDiagram
 | UI | Next.js 16 App Router, Tailwind v4, shadcn/ui (Base UI), GSAP ScrollTrigger, Phosphor Light; a small SSE reader | Landing, chat UI and dashboard in one app. Uses double-bezel cards and scroll choreography, and respects reduced motion. |
 | API | FastAPI with SSE | Streams chat tokens and suite progress |
 | Agent | LangGraph | Explicit graph; Jev answers become the conditional edges |
-| Decisions | **Jev via OpenRouter Decisions API** | Routing, guards, tool gate, judge: typed, calibrated, pay for input only |
+| Decisions | **Jev via OpenRouter Decisions API**, called through LiteLLM (`jev/` custom provider in `jev.py`) | Routing, guards, tool gate, judge: typed, calibrated, pay for input only. Going through LiteLLM gives Jev the same tracing, cost and 429 backoff as the LLM |
 | Generation | LiteLLM → OpenAI `gpt-4o-mini` | Replies, field/name/needs extraction, sim-user messages, failure explanations |
 | Knowledge | `policy.md` + `catalog.yaml` (40 plans from policybazaar.com), whole in the prompt | About 9k tokens, under Jev's 32k limit, so no RAG and no vector DB |
-| Observability | Langfuse (self-hosted, `langfuse_otel` callback) | Every LLM call traced per conversation session; the project id is resolved from the keys |
+| Observability | Langfuse (self-hosted, `langfuse_otel` callback) | Every Jev and LLM call is a named generation (`jev-router`, `jev-tool-gate`, `jev-next-move`, `jev-judge`, `extract-*`, `sim-user`, `judge-explain`, `claimchat-reply`) in its conversation's session, with tokens and cost; the project id is resolved from the keys |
 | Queue | Redis + arq | Suite jobs and progress pub/sub |
 | Deploy | Docker Compose, then AWS EC2 (ECS later) | One-command demo |
 
@@ -317,6 +314,7 @@ A `choice` question, `next_move`, with the options continue, switch_topic, escal
 - **Jev decides, the LLM talks.** Jev can't generate or explain. The LLM writes every reply and explains only the failed criteria.
 - **No math in Jev.** Latency, cost and field validation (date parsing) happen in code.
 - **The Decisions API is alpha.** It is wrapped in one `decide(state, questions)` function with a LiteLLM fallback behind a flag. `ponytail:` it's a single function, not a provider abstraction.
+- **Jev through LiteLLM.** OpenRouter rejects Jev on `/chat/completions`, so LiteLLM's `openrouter/` provider can't call it. A ~25-line LiteLLM `CustomLLM` (`jev/<model>`) forwards `{state, questions}` to `/alpha/decisions` and returns the answers as the message content, with Jev's billed cost as the response cost. Every decision then shows in Langfuse next to the LLM calls. The session id rides a contextvar (`llm.session()`), set once per chat turn, judge run and simulated chat.
 - **32k context.** Send the last ~10 messages and the retrieved KB chunks, not the whole history or the whole KB.
 - **Same bot for live and sim.** Test Lab calls ClaimChat in-process, and external bots go through the HTTP adapter. There's no second implementation.
 - **Fewer moving parts.** arq over Celery; the whole KB in the prompt instead of a vector DB; no review table.

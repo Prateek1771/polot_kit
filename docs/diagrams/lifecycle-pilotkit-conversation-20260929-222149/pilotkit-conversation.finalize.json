@@ -5,15 +5,15 @@
   "status": "pass",
   "type": "lifecycle",
   "quality": "showcase",
-  "startedAt": "2026-09-29T17:16:49.416Z",
+  "startedAt": "2026-09-29T17:54:44.866Z",
   "specification": {
     "path": "D:\\personal\\persistance_dev\\docs\\diagrams\\lifecycle-pilotkit-conversation-20260929-222149\\candidate.json",
-    "sha256": "e507817c652ba6952bc86fa69abb2d6fc337d41fcea5fdae8b6b9882b0f7feef",
-    "bytes": 6781
+    "sha256": "29680eb826b34d67e904d35cb66e2c48a47d30cb6f07f91e65bfb7a27c4fc06a",
+    "bytes": 7080
   },
   "artifact": {
     "path": "D:\\personal\\persistance_dev\\docs\\diagrams\\lifecycle-pilotkit-conversation-20260929-222149\\pilotkit-conversation.html",
-    "sha256": "dbfb50dce6c48b3f32e4342a670ff34a7060d8860fd3a76ea36a49d569c64b8f",
+    "sha256": "82ef0038c692826877963e96e2640a74abd838a09ba3a87deadd9b76edf2c2d4",
     "bytes": 768702
   },
   "stages": {
@@ -40,8 +40,8 @@
         "ok": true,
         "command": "validate",
         "specification": {
-          "sha256": "e507817c652ba6952bc86fa69abb2d6fc337d41fcea5fdae8b6b9882b0f7feef",
-          "bytes": 6781
+          "sha256": "29680eb826b34d67e904d35cb66e2c48a47d30cb6f07f91e65bfb7a27c4fc06a",
+          "bytes": 7080
         },
         "validation": {
           "checksPassed": 9,
@@ -56,7 +56,7 @@
     "deliver": {
       "status": "pass",
       "exitCode": 0,
-      "durationMs": 1616,
+      "durationMs": 1554,
       "command": [
         "C:\\Program Files\\nodejs\\node.exe",
         "C:\\Users\\admin\\.agents\\skills\\archify\\bin\\archify.mjs",
@@ -72,18 +72,18 @@
       ],
       "receipt": {
         "schemaVersion": 1,
-        "receiptId": "d60cf9a4-6a13-4746-a644-2bf52e01697e",
+        "receiptId": "38bee82a-20a2-4a1c-a249-0f7f4d525c80",
         "ok": true,
         "command": "deliver",
         "type": "lifecycle",
         "input": "D:\\personal\\persistance_dev\\docs\\diagrams\\lifecycle-pilotkit-conversation-20260929-222149\\candidate.json",
         "output": "D:\\personal\\persistance_dev\\docs\\diagrams\\lifecycle-pilotkit-conversation-20260929-222149\\pilotkit-conversation.html",
         "specification": {
-          "sha256": "e507817c652ba6952bc86fa69abb2d6fc337d41fcea5fdae8b6b9882b0f7feef",
-          "bytes": 6781
+          "sha256": "29680eb826b34d67e904d35cb66e2c48a47d30cb6f07f91e65bfb7a27c4fc06a",
+          "bytes": 7080
         },
         "artifact": {
-          "sha256": "dbfb50dce6c48b3f32e4342a670ff34a7060d8860fd3a76ea36a49d569c64b8f",
+          "sha256": "82ef0038c692826877963e96e2640a74abd838a09ba3a87deadd9b76edf2c2d4",
           "bytes": 768702
         },
         "validation": {
@@ -97,7 +97,7 @@
         "evidence": {
           "verified": true,
           "repository": "https://localhost/pilotkit/persistance_dev.git",
-          "revision": "0901a981a2d70b88525c36ee91671fc15ee187aa",
+          "revision": "52b68bab3b07bd241b782d95051e9647879d5a67",
           "references": 12,
           "linkMode": "local-only"
         },
@@ -117,7 +117,7 @@
     "check": {
       "status": "pass",
       "exitCode": 0,
-      "durationMs": 374,
+      "durationMs": 223,
       "command": [
         "C:\\Program Files\\nodejs\\node.exe",
         "C:\\Users\\admin\\.agents\\skills\\archify\\bin\\archify.mjs",
@@ -129,7 +129,7 @@
         "ok": true,
         "file": "D:\\personal\\persistance_dev\\docs\\diagrams\\lifecycle-pilotkit-conversation-20260929-222149\\pilotkit-conversation.html",
         "artifact": {
-          "sha256": "dbfb50dce6c48b3f32e4342a670ff34a7060d8860fd3a76ea36a49d569c64b8f",
+          "sha256": "82ef0038c692826877963e96e2640a74abd838a09ba3a87deadd9b76edf2c2d4",
           "bytes": 768702
         },
         "checks": [
@@ -247,13 +247,13 @@
           "issues": []
         },
         "provenance": "current",
-        "deliveryReceiptId": "d60cf9a4-6a13-4746-a644-2bf52e01697e"
+        "deliveryReceiptId": "38bee82a-20a2-4a1c-a249-0f7f4d525c80"
       }
     },
     "browser-check": {
       "status": "pass",
       "exitCode": 0,
-      "durationMs": 2880,
+      "durationMs": 3964,
       "command": [
         "C:\\Program Files\\nodejs\\node.exe",
         "C:\\Users\\admin\\.agents\\skills\\archify\\bin\\archify.mjs",
@@ -271,10 +271,10 @@
         "status": "pass",
         "visualReview": "not-requested",
         "provenance": "current",
-        "deliveryReceiptId": "d60cf9a4-6a13-4746-a644-2bf52e01697e",
+        "deliveryReceiptId": "38bee82a-20a2-4a1c-a249-0f7f4d525c80",
         "artifact": {
           "path": "D:\\personal\\persistance_dev\\docs\\diagrams\\lifecycle-pilotkit-conversation-20260929-222149\\pilotkit-conversation.html",
-          "sha256": "dbfb50dce6c48b3f32e4342a670ff34a7060d8860fd3a76ea36a49d569c64b8f",
+          "sha256": "82ef0038c692826877963e96e2640a74abd838a09ba3a87deadd9b76edf2c2d4",
           "bytes": 768702
         },
         "state": {
@@ -969,8 +969,8 @@
     "browserCheckReceipt": "D:\\personal\\persistance_dev\\docs\\diagrams\\lifecycle-pilotkit-conversation-20260929-222149\\pilotkit-conversation.browser-check.json"
   },
   "visualReview": "not-requested",
-  "finishedAt": "2026-09-29T17:16:55.611Z",
-  "durationMs": 6194,
+  "finishedAt": "2026-09-29T17:54:52.074Z",
+  "durationMs": 7208,
   "update": {
     "status": "current",
     "installedVersion": "3.0.1",

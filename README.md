@@ -9,7 +9,7 @@
   - **Shoppers**: they get plans recommended and compared from 40 real plans across car, bike, health, term and travel, compiled from policybazaar.com.
 - **Test Lab** (`/lab`). Nine simulated customers chat with the same bot: an angry claimant, a Hinglish speaker, a PII over-sharer, a prompt injector, an unknown customer, a car shopper and others. Every conversation is graded against a rubric, and only the uncertain verdicts reach a human review queue (`/lab/review`). The result is a pilot-readiness report and a before/after compare view.
 
-**Jev decides, the LLM talks.** Every decision the code branches on is a typed, calibrated answer from **TypeSafe Jev** (`typesafe/jev-1.13`, via the OpenRouter Decisions API):
+**Jev decides, the LLM talks.** Every decision the code branches on is a typed, calibrated answer from **TypeSafe Jev** (`typesafe/jev-1.13`, via the OpenRouter Decisions API, called through LiteLLM):
 - intent
 - prompt-injection
 - handoff
@@ -39,7 +39,7 @@ docker compose up --build
 | http://localhost:3100/lab/review | Human review queue (verdicts where 0.3 < p < 0.7) |
 | http://localhost:8000/health | API |
 
-**Tracing (optional).** Run Langfuse (self-hosted on :3000, or Cloud) and put its keys in `.env`. The API sends LiteLLM traces per conversation session, and the Lab's transcript page links to each session. Host ports avoid a local Langfuse stack: web is on 3100, postgres on 5433 and redis on 6380.
+**Tracing (optional).** Run Langfuse (self-hosted on :3000, or Cloud) and put its keys in `.env`. Every Jev decision and every LLM call goes through LiteLLM, and the `langfuse_otel` callback records each one as a named generation (`jev-router`, `jev-tool-gate`, `jev-next-move`, `jev-judge`, `extract-*`, `sim-user`, `judge-explain`, `claimchat-reply`) with input, output, tokens and cost, all in the conversation's session. The Lab's transcript page links to that session. Host ports avoid a local Langfuse stack: web is on 3100, postgres on 5433 and redis on 6380.
 
 ## Try it
 | Say | What happens |
@@ -57,19 +57,19 @@ Seeded customers (fictional) are in `api/app/data/customers.yaml`: Priya Sharma,
 ## How it works
 - **One chat turn:** `POST /chat` (SSE) → `bot.chat_turn()`. One Jev router call carries five questions (intent, injection, needs_human, pii_overshare, confirms). `route()` picks one branch: identify, my_policy, claim + tool gate, status, shop, coverage, refuse, handoff or clarify. The reply then streams back.
 - **Test Lab:** `POST /runs` enqueues an arq job. Each persona loops persona message → `chat_turn()` (the same path as live chat) → Jev `next_move`, for up to 8 turns. A Jev rubric scores each conversation, and `triage()` marks ≥ 0.7 pass, ≤ 0.3 fail, and anything between goes to human review.
-- **Diagrams:** interactive architecture, sequence, workflow and lifecycle diagrams, each with a WebM recording of its trace animation, are in [`docs/`](docs/README.md). Design rationale and trade-offs are in [`PILOTKIT.md`](PILOTKIT.md).
+- **Diagrams:** interactive architecture, sequence, workflow and lifecycle diagrams, each with a WebM recording of its trace animation, are in [`docs/`](docs/README.md). Design rationale and trade-offs are in [`docs/PILOTKIT.md`](docs/PILOTKIT.md).
 
 ## Stack
 - **Web:** Next.js 16 (App Router), Tailwind v4, shadcn (Base UI), GSAP ScrollTrigger, Phosphor icons, Geist + Plus Jakarta Sans.
 - **API:** FastAPI + LangGraph, arq on Redis, Postgres (raw SQL, no ORM).
-- **Models:** Jev through the OpenRouter Decisions API; LiteLLM → OpenAI gpt-4o-mini.
+- **Models:** LiteLLM for every call. Jev goes through a `jev/` custom provider to the OpenRouter Decisions API (Jev isn't served on chat/completions), and gpt-4o-mini goes to OpenAI.
 - **Ops:** Langfuse tracing, Docker Compose.
 
 ```
-api/   app/main.py (routes) · bot.py (chat graph) · jev.py (only Jev entry) · llm.py · sim.py · judge.py · worker.py · db.py
+api/   app/main.py (routes) · bot.py (chat graph) · jev.py (only Jev entry; LiteLLM custom provider) · llm.py (LiteLLM + Langfuse session) · sim.py · judge.py · worker.py · db.py
        app/data/ insurance.yaml (personas, prompts, every Jev question, thresholds) · catalog.yaml · customers.yaml · policy.md
 web/   app/page.tsx (landing) · app/chat · app/lab/{runs/[id],c/[id],review,compare} · components/{pk,nav,chat-cards}.tsx · lib/{api,motion}.ts
-docs/  diagrams/ (Archify HTML + WebM) · screenshots/
+docs/  PILOTKIT.md (design) · diagrams/ (Archify HTML + WebM) · screenshots/
 ```
 
 ## Environment

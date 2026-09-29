@@ -7,13 +7,13 @@
   "quality": "showcase",
   "specification": {
     "path": "D:\\personal\\persistance_dev\\docs\\diagrams\\architecture-pilotkit-system-20260929-222149\\candidate.json",
-    "sha256": "b0b2a2ce5abae39761d6c8e676a82e25b37a36a45a5011eb7a79d6c3ec9709de",
-    "bytes": 8418
+    "sha256": "7ff5cbe679b7133927f4ab16b9cbcd2c04064b1380f18b450dcfe7301bfe3022",
+    "bytes": 9098
   },
   "artifact": {
     "path": "D:\\personal\\persistance_dev\\docs\\diagrams\\architecture-pilotkit-system-20260929-222149\\pilotkit-system.html",
-    "sha256": "d9d65ca90b3fc73a73a0154765ce2c58949a0f17a0abb76cb9c026e2a5f10488",
-    "bytes": 771649
+    "sha256": "abacd4081d46c357456c5a0bf4abd1b5b6f59caf7bcc131551b68aa9e3e6b21d",
+    "bytes": 772080
   },
   "gates": {
     "validate": "pass",
@@ -43,5 +43,5 @@
     "noticeText": null
   },
   "visualReview": "not-requested",
-  "durationMs": 5779
+  "durationMs": 5149
 }

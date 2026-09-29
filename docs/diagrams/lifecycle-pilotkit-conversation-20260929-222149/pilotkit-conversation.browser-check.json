@@ -6,10 +6,10 @@
   "status": "pass",
   "visualReview": "not-requested",
   "provenance": "current",
-  "deliveryReceiptId": "d60cf9a4-6a13-4746-a644-2bf52e01697e",
+  "deliveryReceiptId": "38bee82a-20a2-4a1c-a249-0f7f4d525c80",
   "artifact": {
     "path": "D:\\personal\\persistance_dev\\docs\\diagrams\\lifecycle-pilotkit-conversation-20260929-222149\\pilotkit-conversation.html",
-    "sha256": "dbfb50dce6c48b3f32e4342a670ff34a7060d8860fd3a76ea36a49d569c64b8f",
+    "sha256": "82ef0038c692826877963e96e2640a74abd838a09ba3a87deadd9b76edf2c2d4",
     "bytes": 768702
   },
   "state": {
