@@ -16,7 +16,7 @@ Design, diagrams and trade-offs: [`PILOTKIT.md`](PILOTKIT.md).
 cp .env.example .env      # set OPENROUTER_API_KEY (Jev) and OPENAI_API_KEY (LLM)
 docker compose up --build
 ```
-- Assistant and Lab: http://localhost:3100
+- Landing: http://localhost:3100 · Assistant: http://localhost:3100/chat · Test Lab: http://localhost:3100/lab
 - API: http://localhost:8000 (`/health`)
 
 **Tracing (optional).** Run Langfuse (self-hosted on :3000, or Cloud) and put its keys in `.env`. The API sends LiteLLM traces per conversation session, and the Lab's transcript page links to each session. Host ports are chosen to avoid a local Langfuse stack: postgres is on 5433 and redis on 6380.
@@ -34,7 +34,7 @@ docker compose up --build
 Seeded customers (fictional) are in `api/app/data/customers.yaml`: Priya Sharma, Arjun Mehta, Neha Kapoor, Rohan Iyer, Vikram Singh and Ananya Rao.
 
 ## Stack
-Next.js 16 + Tailwind v4 + shadcn (Base UI) · FastAPI + LangGraph · Jev (OpenRouter Decisions API) · LiteLLM → OpenAI gpt-4o-mini · Postgres · Redis + arq · Langfuse · Docker Compose.
+Next.js 16 + Tailwind v4 + shadcn (Base UI) + GSAP ScrollTrigger + Phosphor icons · FastAPI + LangGraph · Jev (OpenRouter Decisions API) · LiteLLM → OpenAI gpt-4o-mini · Postgres · Redis + arq · Langfuse · Docker Compose.
 
 ## Environment
 | Var | Purpose |

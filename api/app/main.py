@@ -12,7 +12,7 @@ from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
 from . import db
-from .bot import CUSTOMERS, SUITE, chat_turn
+from .bot import CATALOG, CUSTOMERS, SUITE, chat_turn
 from .worker import REDIS
 
 # browser-facing Langfuse URL (in docker, LANGFUSE_HOST is the container->host address used for sending)
@@ -306,6 +306,12 @@ async def calibration():
         "select count(*) total, count(*) filter (where verdict='review') review from score"
     )
     return {"bins": bins, "agreement": agree, "totals": totals}
+
+
+@app.get("/catalog")
+async def catalog():
+    keys = ("id", "category", "insurer", "plan", "claim_settlement_ratio")
+    return {"as_of": CATALOG.get("as_of"), "plans": [{k: p.get(k) for k in keys} for p in CATALOG["plans"]]}
 
 
 @app.get("/health")

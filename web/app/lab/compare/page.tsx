@@ -1,12 +1,13 @@
 "use client";
 
-import { ArrowDownRight, ArrowLeft, ArrowUpRight, Minus } from "lucide-react";
+import { ArrowDownRight, ArrowLeft, ArrowUpRight, Minus } from "@phosphor-icons/react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { Suspense, useEffect, useState } from "react";
-import { Kpi, label, ms, pct, usd, VerdictPill } from "@/components/pk";
+import { Suspense, useEffect, useRef, useState } from "react";
+import { Bezel, Eyebrow, Kpi, label, ms, pct, usd, VerdictPill } from "@/components/pk";
 import { Skeleton } from "@/components/ui/skeleton";
 import { get, type Run, type RunStats } from "@/lib/api";
+import { useReveal } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 
 type Cmp = { a: RunStats & { id: string }; b: RunStats & { id: string }; criteria: { criterion: string; a?: number | null; b?: number | null }[] };
@@ -32,6 +33,8 @@ function Compare() {
   const [a, b] = [q.get("a"), q.get("b")];
   const [cmp, setCmp] = useState<Cmp | null>(null);
   const [runs, setRuns] = useState<Record<string, Run>>({});
+  const root = useRef<HTMLDivElement>(null);
+  useReveal(root, [!!cmp]);
 
   useEffect(() => {
     if (!a || !b) return;
@@ -40,16 +43,19 @@ function Compare() {
   }, [a, b]);
 
   if (!a || !b) return <div className="mx-auto max-w-7xl px-4 py-8 text-sm">Pick two runs in the <Link className="text-primary hover:underline" href="/lab">Test Lab</Link>.</div>;
-  if (!cmp) return <div className="mx-auto max-w-7xl px-4 py-8"><Skeleton className="h-64" /></div>;
+  if (!cmp) return <div ref={root} className="mx-auto max-w-7xl px-4 py-16"><Skeleton className="h-64 rounded-[2rem]" /></div>;
   const name = (id: string) => runs[id]?.label || id.slice(0, 8);
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8">
-      <Link href="/lab" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"><ArrowLeft className="size-4" /> Test Lab</Link>
-      <h1 className="mt-2 text-2xl font-semibold tracking-tight">Compare runs</h1>
-      <div className="mt-6 grid gap-4 md:grid-cols-2">
+    <div ref={root} className="mx-auto max-w-7xl px-4 pb-24 pt-10 sm:pt-14">
+      <Link href="/lab" className="group inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"><ArrowLeft className="size-4 transition-transform duration-500 group-hover:-translate-x-0.5" /> Test Lab</Link>
+      <div data-reveal className="mt-5">
+        <Eyebrow>Before / after</Eyebrow>
+        <h1 className="mt-4 text-[36px] font-medium leading-[1.02] sm:text-[52px]">Compare runs. <span className="text-primary">See what the fix fixed.</span></h1>
+      </div>
+      <div className="mt-10 grid gap-5 md:grid-cols-2">
         {(["a", "b"] as const).map((k) => (
-          <div key={k} className={cn("rounded-3xl border bg-card shadow-soft p-5", k === "b" && "border-primary/40")}>
+          <Bezel key={k} data-reveal className={cn(k === "b" && "ring-primary/25")} inner="p-6">
             <div className="flex items-center justify-between">
               <div>
                 <div className="text-xs font-medium text-muted-foreground">{k === "a" ? "Baseline" : "Candidate"}</div>
@@ -58,18 +64,19 @@ function Compare() {
               <VerdictPill verdict={cmp[k].verdict} />
             </div>
             <div className="mt-4 grid grid-cols-3 gap-2">
-              <Kpi title="Pass rate" value={pct(cmp[k].pass_rate)} />
-              <Kpi title="p95 latency" value={ms(cmp[k].p95)} />
+              <Kpi title="Pass rate" value={pct(cmp[k].pass_rate)} count={cmp[k].pass_rate == null ? undefined : { to: cmp[k].pass_rate!, format: (n) => pct(n) }} />
+              <Kpi title="p95 latency" value={ms(cmp[k].p95)} count={cmp[k].p95 == null ? undefined : { to: cmp[k].p95!, format: ms }} />
               <Kpi title="Judge cost" value={usd(cmp[k].judge_cost)} />
             </div>
-          </div>
+          </Bezel>
         ))}
       </div>
 
-      <section className="mt-6 overflow-x-auto rounded-3xl border bg-card shadow-soft" aria-labelledby="pc">
-        <h2 id="pc" className="px-5 pt-5 font-semibold">Per-criterion pass rate</h2>
+      <Bezel data-reveal className="mt-5" inner="overflow-x-auto">
+      <section aria-labelledby="pc">
+        <h2 id="pc" className="px-6 pt-6 font-semibold">Per-criterion pass rate</h2>
         <table className="mt-3 w-full min-w-[560px] text-sm">
-          <thead className="bg-muted/40 text-left text-xs text-muted-foreground">
+          <thead className="text-left text-xs text-muted-foreground">
             <tr><th className="px-5 py-2.5 font-medium">Criterion</th><th className="px-5 py-2.5 font-medium">{name(cmp.a.id)}</th><th className="px-5 py-2.5 font-medium">{name(cmp.b.id)}</th><th className="px-5 py-2.5 font-medium">Change</th></tr>
           </thead>
           <tbody className="divide-y">
@@ -79,7 +86,7 @@ function Compare() {
                 {(["a", "b"] as const).map((k) => (
                   <td key={k} className="px-5 py-3">
                     <div className="flex w-40 items-center gap-2">
-                      <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted"><div className={cn("h-full rounded-full", k === "a" ? "bg-muted-foreground/50" : "bg-primary")} style={{ width: `${(c[k] ?? 0) * 100}%` }} /></div>
+                      <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-foreground/[0.06]"><div data-bar={Math.max(0.02, c[k] ?? 0)} className={cn("h-full w-full origin-left rounded-full", k === "a" ? "bg-muted-foreground/50" : "bg-primary")} style={{ transform: `scaleX(${Math.max(0.02, c[k] ?? 0)})` }} /></div>
                       <span className="w-10 text-right tabular">{pct(c[k])}</span>
                     </div>
                   </td>
@@ -87,7 +94,7 @@ function Compare() {
                 <td className="px-5 py-3"><Delta a={c.a} b={c.b} /></td>
               </tr>
             ))}
-            <tr className="bg-muted/20">
+            <tr className="bg-foreground/[0.02]">
               <td className="px-5 py-3 font-semibold">Overall</td>
               <td className="px-5 py-3 tabular">{pct(cmp.a.pass_rate)}</td>
               <td className="px-5 py-3 tabular">{pct(cmp.b.pass_rate)}</td>
@@ -96,6 +103,7 @@ function Compare() {
           </tbody>
         </table>
       </section>
+      </Bezel>
     </div>
   );
 }

@@ -1,14 +1,15 @@
 "use client";
 
-import { CheckCheck, Inbox, ThumbsDown, ThumbsUp } from "lucide-react";
+import { Checks, ThumbsDown, ThumbsUp, Tray } from "@phosphor-icons/react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { Suspense, useCallback, useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { Empty, Kpi, label, pct, ProbBar } from "@/components/pk";
+import { Bezel, Empty, Eyebrow, Kpi, label, pct, ProbBar } from "@/components/pk";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { get, post, type Score } from "@/lib/api";
+import { useReveal } from "@/lib/motion";
 
 type Item = Score & { persona: string | null; source: string; run_id: string | null };
 type Calib = {
@@ -26,6 +27,8 @@ function Review() {
   const [items, setItems] = useState<Item[] | null>(null);
   const [criteria, setCriteria] = useState<Record<string, string>>({});
   const [cal, setCal] = useState<Calib | null>(null);
+  const root = useRef<HTMLDivElement>(null);
+  useReveal(root, [items == null, !!cal]);
 
   const load = useCallback(() => {
     get<Item[]>(`/reviews${runId ? `?run_id=${runId}` : ""}`).then(setItems);
@@ -51,13 +54,16 @@ function Review() {
   const reviewShare = cal && cal.totals.total ? cal.totals.review / cal.totals.total : null;
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8">
-      <h1 className="text-2xl font-semibold tracking-tight">Review queue</h1>
-      <p className="mt-1 text-sm text-muted-foreground">
+    <div ref={root} className="mx-auto max-w-7xl px-4 pb-24 pt-10 sm:pt-16">
+      <div data-reveal>
+      <Eyebrow>Human in the loop</Eyebrow>
+      <h1 className="mt-4 text-[36px] font-medium leading-[1.02] sm:text-[52px]">Review queue. <span className="text-primary">Only the uncertain.</span></h1>
+      <p className="mt-3 max-w-2xl text-[15px] text-muted-foreground">
         Only decisions where Jev is uncertain (30–70%) land here. Everything else was auto-graded. {runId && <>Filtered to one run · <Link className="text-primary hover:underline" href="/lab/review">show all</Link></>}
       </p>
+      </div>
 
-      <div className="mt-6 grid grid-cols-2 gap-3 md:grid-cols-4">
+      <div className="mt-10 grid grid-cols-2 gap-3 md:grid-cols-4">
         <Kpi title="Waiting for you" value={items?.length ?? "—"} accent />
         <Kpi title="Sent to review" value={pct(reviewShare)} sub={`of ${cal?.totals.total ?? 0} decisions`} />
         <Kpi title="Jev ↔ human agreement" value={pct(cal?.agreement.rate)} sub={`on ${cal?.agreement.n ?? 0} spot-checked auto-grades`} />
@@ -67,11 +73,11 @@ function Review() {
       <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
         <section aria-label="Queue">
           {items == null ? <Skeleton className="h-64" /> : items.length === 0 ? (
-            <Empty icon={CheckCheck} title="Queue is clear">Nothing needs a human right now. New uncertain decisions appear here after each run.</Empty>
+            <Empty icon={Checks} title="Queue is clear">Nothing needs a human right now. New uncertain decisions appear here after each run.</Empty>
           ) : (
             <ul className="flex flex-col gap-3">
               {items.map((it) => (
-                <li key={it.conversation_id + it.criterion} className="rounded-3xl border bg-card shadow-soft p-4 pk-in">
+                <li key={it.conversation_id + it.criterion} data-reveal className="rounded-[1.5rem] bg-card p-5 shadow-soft ring-1 ring-foreground/[0.06] dark:ring-white/[0.08]">
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="font-medium capitalize">{label(it.criterion)}</span>
                     <span className="text-xs text-muted-foreground">· {it.persona ? label(it.persona) : "live chat"}</span>
@@ -83,8 +89,8 @@ function Review() {
                     <span className="w-24 shrink-0 text-right text-xs tabular">Jev says {Math.round(it.prob * 100)}% yes</span>
                   </div>
                   <div className="mt-3 flex gap-2">
-                    <Button size="lg" variant="outline" onClick={() => mark(it, "pass")}><ThumbsUp className="text-success" /> Pass</Button>
-                    <Button size="lg" variant="outline" onClick={() => mark(it, "fail")}><ThumbsDown className="text-destructive" /> Fail</Button>
+                    <Button size="lg" variant="outline" className="h-10 rounded-full px-4 active:scale-[0.98]" onClick={() => mark(it, "pass")}><ThumbsUp className="text-success" /> Pass</Button>
+                    <Button size="lg" variant="outline" className="h-10 rounded-full px-4 active:scale-[0.98]" onClick={() => mark(it, "fail")}><ThumbsDown className="text-destructive" /> Fail</Button>
                   </div>
                 </li>
               ))}
@@ -92,11 +98,11 @@ function Review() {
           )}
         </section>
 
-        <section className="h-fit rounded-3xl border bg-card shadow-soft p-5" aria-labelledby="cal">
+        <Bezel data-reveal className="h-fit" inner="p-6"><section aria-labelledby="cal">
           <h2 id="cal" className="font-semibold">Calibration</h2>
           <p className="mt-0.5 text-xs text-muted-foreground">When Jev says X% yes, how often do humans say pass? A calibrated model tracks the diagonal.</p>
           <Calibration bins={cal?.bins ?? []} />
-        </section>
+        </section></Bezel>
       </div>
     </div>
   );
@@ -104,7 +110,7 @@ function Review() {
 
 function Calibration({ bins }: { bins: Calib["bins"] }) {
   const byBin = Object.fromEntries(bins.map((b) => [b.bin, b]));
-  if (bins.length === 0) return <div className="mt-4"><Empty icon={Inbox} title="No labels yet">Label a few items to see calibration.</Empty></div>;
+  if (bins.length === 0) return <div className="mt-4"><Empty icon={Tray} title="No labels yet">Label a few items to see calibration.</Empty></div>;
   return (
     <div className="mt-4">
       <div className="flex h-40 items-end gap-2 border-b border-l pl-1" role="img" aria-label="Calibration chart: human pass rate per Jev probability bucket">
@@ -114,7 +120,7 @@ function Calibration({ bins }: { bins: Calib["bins"] }) {
             <div key={i} className="relative flex h-full flex-1 flex-col justify-end">
               <div className="absolute inset-x-0 border-t border-dashed border-foreground/30" style={{ bottom: `${i * 20 + 10}%` }} title="perfect calibration" />
               {b ? (
-                <div className="rounded-t bg-jev/80 transition-[height] duration-300" style={{ height: `${Math.max(2, Number(b.human_pass) * 100)}%` }} title={`${b.n} labels · human pass ${pct(Number(b.human_pass))}`} />
+                <div className="rounded-t-md bg-jev/80" style={{ height: `${Math.max(2, Number(b.human_pass) * 100)}%` }} title={`${b.n} labels · human pass ${pct(Number(b.human_pass))}`} />
               ) : <div className="h-px" />}
             </div>
           );

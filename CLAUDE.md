@@ -10,7 +10,7 @@ Design and rationale are in `PILOTKIT.md`; read it before changing behaviour.
 ## Layout
 ```
 api/            FastAPI + LangGraph backend (Python 3.12, uv)
-  app/main.py     routes: /chat (SSE), /conversations, /runs, /reviews, /compare, /calibration
+  app/main.py     routes: /chat (SSE), /conversations, /runs, /reviews, /compare, /calibration, /catalog
   app/bot.py      LangGraph: router (Jev) -> new_claim|tool_gate|status|identify|my_policy|shop|coverage|refuse|handoff|clarify;
                   pick_plans()/named_plans() pure code; chat_turn() streams a reply
   app/jev.py      decide(state, questions) -> Jev answers (+ _meta cost/latency). Only Jev entry point.
@@ -25,11 +25,13 @@ api/            FastAPI + LangGraph backend (Python 3.12, uv)
   app/data/customers.yaml  demo customers upserted into the `policy` table at startup (looked up by full name)
   tests/test_core.py
 web/            Next.js 16 App Router + Tailwind v4 + shadcn (base-nova, Base UI, not Radix)
-  app/page.tsx              assistant chat UI + Jev decision panel
+  app/page.tsx              landing: dark hero, pinned "one turn" scene, bento, live Lab proof, catalog marquee
+  app/chat/page.tsx         assistant chat UI + Jev decision panel
   app/lab/...               runs list, runs/[id] report, c/[id] transcript, review queue, compare
   components/pk.tsx         shared bits: ProbBar, Verdict, Kpi, Empty, ThemeToggle, formatters (usd, inr, ms)
   components/chat-cards.tsx cards the bot sends: policy, plans, compare, confirm, claim, status, handoff
   lib/api.ts                fetch helpers, SSE reader, shared types (mirror main.py)
+  lib/motion.ts             the only GSAP entry: plugins, MOTION_OK gate, useReveal()
 docker-compose.yml  postgres, redis, api, worker, web
 ```
 
@@ -50,9 +52,20 @@ docker-compose.yml  postgres, redis, api, worker, web
 - Raw SQL through the `db.execute/one/many` helpers, with `db.j()` for jsonb. No ORM. Schema changes go in `schema.sql` (idempotent `create ... if not exists`).
 - Frontend:
   - Pages are client components that fetch the API directly.
-  - Colours come from tokens only (`primary`, `ink`, `success`, `warning`, `destructive`, `jev`), in both themes. The palette follows the Persistence brand (`#635bff`, Helvetica Neue, lavender surface, `shadow-soft` cards, pill buttons).
+  - Visual language follows `.agents/skills/high-end-visual-design`:
+    - Soft Structuralism app surfaces and an always-dark Ethereal Glass landing hero, with the Persistence indigo `#635bff` accent.
+    - Fonts: Geist (body) and Plus Jakarta Sans (`--font-display`, applied to h1/h2 and `.pk-display`). No Helvetica, Inter or Arial.
+    - Cards are double-bezel (`Bezel` in `pk.tsx`). CTAs are pills with the icon nested in its own circle (`Cta`). Headlines get an `Eyebrow`.
+    - Borders are hairline rings, never solid gray lines.
+  - Colours come from tokens only (`primary`, `ink`, `hero`, `success`, `warning`, `destructive`, `jev`), in both themes. The one exception is a few literal tints inside the always-dark hero mockups.
   - Verdicts always show an icon or text, never colour alone.
-  - Use lucide icons, never emoji.
+  - Icons: `@phosphor-icons/react`, weight `light` by default (set by `IconContext` in the Shell). Never lucide in app code (only the vendored `components/ui/*` still import it). Never emoji.
+  - Motion:
+    - All GSAP goes through `lib/motion.ts`. Mark nodes `data-reveal` (fade-up) or `data-bar="0.73"` (scaleX fill) and call `useReveal(ref, deps)` once per page. Numbers use `<Count>`.
+    - Every tween sits inside `gsap.matchMedia(MOTION_OK)`, so reduced-motion users see static, visible content.
+    - Animate transform and opacity (plus filter blur) only, never width, height, top or left.
+    - Transitions use the `ease-spring` / `--ease-out-expo` curves, not linear or ease-in-out. Continuous scrub and marquee loops are the only `ease: "none"`.
+    - `backdrop-blur` is only for the sticky nav and the fixed mobile overlay. No ScrollTrigger inside the chat.
 - Next 16 differs from older versions. Check `web/node_modules/next/dist/docs/` before using unfamiliar APIs. `useSearchParams` needs a `<Suspense>` wrapper.
 - shadcn here is Base UI. Buttons take a `render` prop, not `asChild`. For link-buttons, use `buttonVariants()` on `<Link>`.
 - Mark deliberate shortcuts with `ponytail:` comments that name the ceiling and the upgrade path.

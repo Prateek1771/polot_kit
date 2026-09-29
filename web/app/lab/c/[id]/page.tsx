@@ -1,15 +1,16 @@
 "use client";
 
-import { ArrowLeft, BadgeCheck, Bot, ExternalLink, Loader2, ThumbsDown, ThumbsUp, User } from "lucide-react";
+import { ArrowLeft, ArrowSquareOut, CircleNotch, Robot, SealCheck, ThumbsDown, ThumbsUp, User } from "@phosphor-icons/react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { ChatCard } from "@/components/chat-cards";
-import { label, ms, ProbBar, usd, Verdict } from "@/components/pk";
+import { Bezel, Eyebrow, label, ms, ProbBar, usd, Verdict } from "@/components/pk";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { get, post, type Message, type Score } from "@/lib/api";
+import { useReveal } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 
 type Conv = {
@@ -30,6 +31,8 @@ export default function ConversationPage() {
   const { id } = useParams<{ id: string }>();
   const [c, setC] = useState<Conv | null>(null);
   const load = useCallback(() => get<Conv>(`/conversations/${id}`).then(setC), [id]);
+  const root = useRef<HTMLDivElement>(null);
+  useReveal(root, [!!c, c?.scores.length]);
 
   useEffect(() => {
     load();
@@ -43,37 +46,39 @@ export default function ConversationPage() {
     load();
   }
 
-  if (!c) return <div className="mx-auto max-w-7xl px-4 py-8"><Skeleton className="h-8 w-72" /><Skeleton className="mt-6 h-96" /></div>;
+  if (!c) return <div ref={root} className="mx-auto max-w-7xl px-4 py-16"><Skeleton className="h-10 w-72 rounded-full" /><Skeleton className="mt-8 h-96 rounded-[2rem]" /></div>;
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8">
-      <Link href={c.run_id ? `/lab/runs/${c.run_id}` : "/lab"} className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
-        <ArrowLeft className="size-4" /> {c.run_id ? "Run report" : "Test Lab"}
+    <div ref={root} className="mx-auto max-w-7xl px-4 pb-24 pt-10 sm:pt-14">
+      <Link href={c.run_id ? `/lab/runs/${c.run_id}` : "/lab"} className="group inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
+        <ArrowLeft className="size-4 transition-transform duration-500 group-hover:-translate-x-0.5" /> {c.run_id ? "Run report" : "Test Lab"}
       </Link>
-      <div className="mt-2 flex flex-wrap items-center gap-3">
-        <h1 className="text-2xl font-semibold capitalize tracking-tight">{c.persona ? label(c.persona) : "Live conversation"}</h1>
+      <div data-reveal className="mt-5"><Eyebrow>Transcript · Jev scorecard</Eyebrow></div>
+      <div data-reveal className="mt-4 flex flex-wrap items-center gap-3">
+        <h1 className="text-[32px] font-medium capitalize leading-[1.05] sm:text-[44px]">{c.persona ? label(c.persona) : "Live conversation"}</h1>
         <span className="rounded-full bg-muted px-2 py-0.5 text-xs">{c.source === "sim" ? "simulated" : "live"}</span>
         <span className="rounded-full bg-muted px-2 py-0.5 text-xs">{c.prompt_variant === "bad" ? "broken prompt" : "production prompt"}</span>
         {c.state?.customer && (
-          <span className="inline-flex items-center gap-1 rounded-full bg-success/10 px-2 py-0.5 text-xs font-medium text-success"><BadgeCheck className="size-3.5" aria-hidden /> verified: {c.state.customer.name}</span>
+          <span className="inline-flex items-center gap-1 rounded-full bg-success/10 px-2 py-0.5 text-xs font-medium text-success"><SealCheck className="size-3.5" weight="fill" aria-hidden /> verified: {c.state.customer.name}</span>
         )}
         {c.trace_url && (
           <a href={c.trace_url} target="_blank" rel="noreferrer" className="ml-auto inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline">
-            Langfuse trace <ExternalLink className="size-3.5" />
+            Langfuse trace <ArrowSquareOut className="size-4" />
           </a>
         )}
       </div>
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_380px]">
-        <section aria-label="Transcript" className="rounded-3xl border bg-card shadow-soft">
+      <div className="mt-10 grid gap-5 lg:grid-cols-[minmax(0,1fr)_380px]">
+        <Bezel data-reveal inner="">
+        <section aria-label="Transcript">
           <ol className="flex flex-col gap-4 p-5">
             {c.messages.map((m) => (
               <li key={m.id} className={cn("flex gap-3", m.role === "user" && "flex-row-reverse")}>
                 <div className={cn("mt-0.5 grid size-7 shrink-0 place-items-center rounded-full", m.role === "user" ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground")}>
-                  {m.role === "user" ? <User className="size-3.5" aria-hidden /> : <Bot className="size-3.5" aria-hidden />}
+                  {m.role === "user" ? <User className="size-4" aria-hidden /> : <Robot className="size-4" aria-hidden />}
                 </div>
                 <div className={cn("flex min-w-0 max-w-[85%] flex-col gap-1.5", m.role === "user" && "items-end")}>
-                  <div className={cn("whitespace-pre-wrap rounded-2xl px-3.5 py-2 text-sm", m.role === "user" ? "rounded-tr-md bg-primary text-primary-foreground" : "rounded-tl-md bg-muted")}>{m.content}</div>
+                  <div className={cn("whitespace-pre-wrap rounded-2xl px-3.5 py-2 text-sm", m.role === "user" ? "rounded-3xl rounded-tr-lg bg-primary px-4 py-2.5 text-primary-foreground" : "rounded-3xl rounded-tl-lg bg-muted px-4 py-2.5")}>{m.content}</div>
                   {m.role === "user" && m.jev && (
                     <div className="flex flex-wrap justify-end gap-1 text-[11px]">
                       <span className="inline-flex items-center gap-1 rounded-full bg-jev/10 px-2 py-0.5 font-medium text-jev">
@@ -92,13 +97,14 @@ export default function ConversationPage() {
           </ol>
           {c.ended_reason && <div className="border-t px-5 py-3 text-xs text-muted-foreground">Ended: {label(c.ended_reason)}</div>}
         </section>
+        </Bezel>
 
         <aside className="flex flex-col gap-4">
-          <section className="rounded-3xl border bg-card shadow-soft p-5" aria-labelledby="sc">
+          <Bezel data-reveal inner="p-6"><section aria-labelledby="sc">
             <div className="flex items-center justify-between">
               <h2 id="sc" className="font-semibold">Jev scorecard</h2>
               {c.status === "error" ? <span className="text-xs font-medium text-destructive">Not graded · {label(c.ended_reason ?? "error")}</span>
-                : c.status !== "judged" && <span className="inline-flex items-center gap-1 text-xs text-primary"><Loader2 className="size-3.5 animate-spin" /> {c.status === "open" ? "in progress" : "grading"}</span>}
+                : c.status !== "judged" && <span className="inline-flex items-center gap-1 text-xs text-primary"><CircleNotch className="size-3.5 animate-spin" /> {c.status === "open" ? "in progress" : "grading"}</span>}
             </div>
             <dl className="mt-3 grid grid-cols-3 gap-2 text-xs">
               <div><dt className="text-muted-foreground">Outcome</dt><dd className="mt-0.5 font-medium capitalize">{c.outcome ? label(c.outcome) : "—"}</dd></div>
@@ -118,17 +124,17 @@ export default function ConversationPage() {
                   </div>
                   {s.reason && <p className="mt-1.5 text-xs text-muted-foreground">{s.reason}</p>}
                   <div className="mt-2 flex gap-1.5">
-                    <Button size="xs" variant={s.human_label === "pass" ? "secondary" : "ghost"} onClick={() => mark(s.criterion, "pass")} aria-label={`Label ${s.criterion} as pass`}><ThumbsUp /> Pass</Button>
-                    <Button size="xs" variant={s.human_label === "fail" ? "secondary" : "ghost"} onClick={() => mark(s.criterion, "fail")} aria-label={`Label ${s.criterion} as fail`}><ThumbsDown /> Fail</Button>
+                    <Button size="xs" className="rounded-full px-2.5" variant={s.human_label === "pass" ? "secondary" : "ghost"} onClick={() => mark(s.criterion, "pass")} aria-label={`Label ${s.criterion} as pass`}><ThumbsUp /> Pass</Button>
+                    <Button size="xs" className="rounded-full px-2.5" variant={s.human_label === "fail" ? "secondary" : "ghost"} onClick={() => mark(s.criterion, "fail")} aria-label={`Label ${s.criterion} as fail`}><ThumbsDown /> Fail</Button>
                   </div>
                 </li>
               ))}
               {c.scores.length === 0 && <li className="py-3 text-sm text-muted-foreground">Not graded yet.</li>}
             </ul>
-          </section>
+          </section></Bezel>
 
           {c.claim && (
-            <section className="rounded-3xl border border-success/30 bg-success/5 shadow-soft p-5 text-sm" aria-labelledby="cl">
+            <section data-reveal className="rounded-[1.5rem] bg-success/[0.06] p-5 text-sm ring-1 ring-success/25" aria-labelledby="cl">
               <h2 id="cl" className="font-semibold">Claim filed · <span className="font-mono">{c.claim.id}</span></h2>
               <dl className="mt-2 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-xs">
                 <dt className="text-muted-foreground">Policy</dt><dd>{c.claim.policy_no}</dd>

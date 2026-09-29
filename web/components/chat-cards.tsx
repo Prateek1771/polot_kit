@@ -1,16 +1,16 @@
 "use client";
 
 import {
-  Bike, CalendarClock, Car, Check, CheckCircle2, ClipboardCheck, GitCompareArrows, Headset, HeartPulse, Plane, ShieldCheck,
-  SquareCheckBig, Umbrella, X,
-} from "lucide-react";
+  Airplane, ArrowsLeftRight, CalendarDots, Car, Check, CheckCircle, CheckSquare, ClipboardText, Headset, Heartbeat, Moped, ShieldCheck,
+  Umbrella, X,
+} from "@phosphor-icons/react";
 import { Fragment } from "react";
 import { inr, label } from "@/components/pk";
 import { Button } from "@/components/ui/button";
 import type { Card, PlanView, PolicyCard } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
-const CAT_ICON: Record<string, React.ElementType> = { car: Car, bike: Bike, health: HeartPulse, term: Umbrella, travel: Plane };
+const CAT_ICON: Record<string, React.ElementType> = { car: Car, bike: Moped, health: Heartbeat, term: Umbrella, travel: Airplane };
 const COVER_LABEL: Record<string, string> = { car: "IDV", bike: "IDV", health: "Sum insured", term: "Life cover", travel: "Cover" };
 const AVATAR_TONES = ["bg-primary/12 text-primary", "bg-jev/12 text-jev", "bg-warning/12 text-warning", "bg-success/12 text-success"];
 
@@ -29,15 +29,15 @@ function Csr({ v }: { v: number | null }) {
   );
 }
 
-const shell = "rounded-2xl border bg-card p-3.5 text-sm shadow-soft";
+const shell = "rounded-[1.25rem] bg-card p-4 text-sm shadow-soft ring-1 ring-foreground/[0.06] dark:ring-white/[0.08]";
 const per = (p: PlanView) => (p.category === "travel" ? " /trip" : " /yr");
 
 export function ChatCard({ card, onSend, disabled }: { card: Card; onSend: (text: string) => void; disabled: boolean }) {
   switch (card.type) {
     case "handoff":
       return (
-        <div className="flex items-center gap-3 rounded-2xl border border-warning/30 bg-warning/5 p-3.5 text-sm">
-          <Headset className="size-5 shrink-0 text-warning" aria-hidden />
+        <div className="flex items-center gap-3 rounded-[1.25rem] bg-warning/[0.07] p-4 text-sm ring-1 ring-warning/25">
+          <Headset className="size-6 shrink-0 text-warning" aria-hidden />
           <div><div className="font-medium">Connecting you to a human advisor</div><div className="text-xs text-muted-foreground">Available 9am–9pm IST, Mon–Sat</div></div>
         </div>
       );
@@ -58,17 +58,17 @@ export function ChatCard({ card, onSend, disabled }: { card: Card; onSend: (text
     default: {
       const rows = Object.entries(card.fields);
       return (
-        <div className={cn(shell, card.type === "claim" && "border-success/30 bg-success/5")}>
+        <div className={cn(shell, card.type === "claim" && "bg-success/[0.06] ring-success/25")}>
           <div className="flex items-center gap-2 font-medium">
             {card.type === "claim"
-              ? <><CheckCircle2 className="size-4 text-success" aria-hidden /> Claim filed · <span className="font-mono">{card.claim_id}</span></>
-              : <><ClipboardCheck className="size-4 text-primary" aria-hidden /> Please confirm your claim</>}
+              ? <><CheckCircle className="size-[18px] text-success" weight="regular" aria-hidden /> Claim filed · <span className="font-mono">{card.claim_id}</span></>
+              : <><ClipboardText className="size-[18px] text-primary" aria-hidden /> Please confirm your claim</>}
           </div>
           <dl className="mt-2 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-xs">
             {rows.map(([k, v]) => (<Fragment key={k}><dt className="text-muted-foreground">{label(k)}</dt><dd>{v}</dd></Fragment>))}
           </dl>
           {card.type === "confirm" && (
-            <Button size="sm" className="mt-3" onClick={() => onSend("Yes, that's correct")} disabled={disabled}><SquareCheckBig /> Yes, that&rsquo;s correct</Button>
+            <Button size="sm" className="mt-3 rounded-full px-4 active:scale-[0.98]" onClick={() => onSend("Yes, that's correct")} disabled={disabled}><CheckSquare /> Yes, that&rsquo;s correct</Button>
           )}
         </div>
       );
@@ -81,7 +81,7 @@ function Renewal({ days }: { days: number }) {
     days < 0 ? ["bg-destructive/10 text-destructive", `Expired ${-days} days ago`]
       : days <= 30 ? ["bg-warning/12 text-warning", `Renews in ${days} days`]
       : ["bg-muted text-muted-foreground", `${days} days left`];
-  return <span className={cn("inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium", cls)}><CalendarClock className="size-3" aria-hidden /> {text}</span>;
+  return <span className={cn("inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium", cls)}><CalendarDots className="size-3" aria-hidden /> {text}</span>;
 }
 
 function PolicyTile({ p }: { p: PolicyCard }) {
@@ -89,14 +89,14 @@ function PolicyTile({ p }: { p: PolicyCard }) {
   return (
     <div className={cn(shell, "w-full max-w-md")}>
       <div className="flex items-start gap-3">
-        <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-secondary text-secondary-foreground"><Icon className="size-4.5" aria-hidden /></span>
+        <span className="grid size-10 shrink-0 place-items-center rounded-full bg-secondary text-secondary-foreground"><Icon className="size-5" aria-hidden /></span>
         <div className="min-w-0 flex-1">
           <div className="truncate font-semibold">{p.plan}</div>
           <div className="text-xs text-muted-foreground">{p.insurer} · <span className="font-mono">{p.policy_no}</span></div>
         </div>
         <Renewal days={p.days_left} />
       </div>
-      {p.insured_item && <div className="mt-3 rounded-xl bg-muted/60 px-3 py-2 text-xs">{p.insured_item}</div>}
+      {p.insured_item && <div className="mt-3 rounded-full bg-foreground/[0.04] px-3.5 py-2 text-xs">{p.insured_item}</div>}
       <dl className="mt-3 grid grid-cols-3 gap-2 text-xs">
         <div><dt className="text-muted-foreground">{COVER_LABEL[p.category] ?? "Cover"}</dt><dd className="mt-0.5 font-semibold tabular">{inr(p.sum_insured_inr)}</dd></div>
         <div><dt className="text-muted-foreground">Premium / yr</dt><dd className="mt-0.5 font-semibold tabular">{inr(p.premium_inr)}</dd></div>
@@ -130,7 +130,7 @@ function PlansCard({ card, onSend, disabled }: { card: Extract<Card, { type: "pl
       </ul>
       {card.plans.length >= 2 && (
         <Button variant="outline" size="sm" className="self-start rounded-full" disabled={disabled} onClick={() => onSend(`Compare ${names.join(" vs ")}`)}>
-          <GitCompareArrows /> Compare side by side
+          <ArrowsLeftRight /> Compare side by side
         </Button>
       )}
     </div>
@@ -139,7 +139,7 @@ function PlansCard({ card, onSend, disabled }: { card: Extract<Card, { type: "pl
 
 function PlanTile({ p, onAsk, disabled }: { p: PlanView; onAsk: () => void; disabled: boolean }) {
   return (
-    <li className={cn(shell, "flex w-64 shrink-0 snap-start flex-col gap-2.5")}>
+    <li className={cn(shell, "flex w-64 shrink-0 snap-start flex-col gap-2.5 transition-[transform,box-shadow] duration-500 hover:-translate-y-1 hover:shadow-[0_24px_50px_-24px_rgb(99_91_255/45%)]")}>
       <div className="flex items-center gap-2.5">
         <InsurerAvatar name={p.insurer} />
         <div className="min-w-0">
@@ -175,7 +175,7 @@ function CompareCard({ plans, asOf }: { plans: PlanView[]; asOf: string }) {
     <div className={cn(shell, "w-full overflow-x-auto p-0")}>
       <table className="w-full min-w-[480px] text-left text-xs">
         <caption className="px-3.5 pt-3 text-left text-xs text-muted-foreground">
-          <span className="inline-flex items-center gap-1.5 font-medium text-foreground"><GitCompareArrows className="size-3.5" aria-hidden /> Side-by-side</span> · indicative, as of {asOf}
+          <span className="inline-flex items-center gap-1.5 font-medium text-foreground"><ArrowsLeftRight className="size-3.5" aria-hidden /> Side-by-side</span> · indicative, as of {asOf}
         </caption>
         <thead>
           <tr className="border-b">

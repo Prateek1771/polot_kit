@@ -227,7 +227,7 @@ erDiagram
 ## 7. Stack mapping
 | Layer | Choice | Why |
 |---|---|---|
-| UI | Next.js 16 App Router, Tailwind v4, shadcn/ui (Base UI); a small SSE reader | Chat UI and dashboard in one app, styled in the Persistence brand language |
+| UI | Next.js 16 App Router, Tailwind v4, shadcn/ui (Base UI), GSAP ScrollTrigger, Phosphor Light; a small SSE reader | Landing, chat UI and dashboard in one app. Uses double-bezel cards and scroll choreography, and respects reduced motion. |
 | API | FastAPI with SSE | Streams chat tokens and suite progress |
 | Agent | LangGraph | Explicit graph; Jev answers become the conditional edges |
 | Decisions | **Jev via OpenRouter Decisions API** | Routing, guards, tool gate, judge: typed, calibrated, pay for input only |
