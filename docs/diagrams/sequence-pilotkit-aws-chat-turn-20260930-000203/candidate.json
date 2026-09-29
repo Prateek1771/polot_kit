@@ -1,0 +1,356 @@
+{
+  "schema_version": 1,
+  "diagram_type": "sequence",
+  "meta": {
+    "title": "PilotKit on AWS — one chat turn at T4",
+    "output": "docs/diagrams/sequence-pilotkit-aws-chat-turn-20260930-000203/pilotkit-aws-chat-turn.html",
+    "quality_profile": "showcase",
+    "animation": "trace",
+    "locale": "en",
+    "repository": {
+      "url": "https://localhost/pilotkit/persistance_dev.git",
+      "link_mode": "local-only",
+      "revision": "6c0aabebd10cf6b4aa10628dc22df78f64ebbea9"
+    },
+    "viewBox": [
+      1080,
+      696
+    ],
+    "column_fit": "spread"
+  },
+  "participants": [
+    {
+      "id": "web",
+      "type": "frontend",
+      "label": "Browser",
+      "sublabel": "chat page",
+      "sources": [
+        {
+          "path": "web/lib/api.ts",
+          "line": 1,
+          "end_line": 38,
+          "label": "fetch + SSE reader"
+        }
+      ]
+    },
+    {
+      "id": "edge",
+      "type": "security",
+      "label": "Edge",
+      "sublabel": "CloudFront · ALB"
+    },
+    {
+      "id": "api",
+      "type": "backend",
+      "label": "api task",
+      "sublabel": "ECS · chat_turn()",
+      "sources": [
+        {
+          "path": "api/app/main.py",
+          "line": 89,
+          "end_line": 117,
+          "label": "/chat SSE"
+        },
+        {
+          "path": "api/app/bot.py",
+          "line": 407,
+          "end_line": 443,
+          "label": "chat_turn"
+        }
+      ]
+    },
+    {
+      "id": "cache",
+      "type": "messagebus",
+      "label": "ElastiCache",
+      "sublabel": "state",
+      "sources": [
+        {
+          "path": "api/app/worker.py",
+          "line": 28,
+          "end_line": 33,
+          "label": "arq settings"
+        },
+        {
+          "path": "docker-compose.yml",
+          "line": 14,
+          "end_line": 16
+        }
+      ]
+    },
+    {
+      "id": "gw",
+      "type": "backend",
+      "label": "LiteLLM Proxy",
+      "sublabel": "limits · fallback",
+      "sources": [
+        {
+          "path": "api/app/llm.py",
+          "line": 16,
+          "end_line": 34,
+          "label": "session + acall"
+        }
+      ]
+    },
+    {
+      "id": "jev",
+      "type": "external",
+      "label": "Jev",
+      "sublabel": "OpenRouter",
+      "sources": [
+        {
+          "path": "api/app/jev.py",
+          "line": 30,
+          "end_line": 56,
+          "label": "JevProvider"
+        }
+      ]
+    },
+    {
+      "id": "llm",
+      "type": "external",
+      "label": "gpt-4o-mini",
+      "sublabel": "OpenAI / Bedrock",
+      "sources": [
+        {
+          "path": "api/app/llm.py",
+          "line": 7,
+          "label": "LLM_MODEL"
+        }
+      ]
+    },
+    {
+      "id": "db",
+      "type": "database",
+      "label": "Aurora",
+      "sublabel": "via RDS Proxy",
+      "sources": [
+        {
+          "path": "api/app/schema.sql",
+          "line": 13,
+          "end_line": 41,
+          "label": "conversation, message"
+        },
+        {
+          "path": "api/app/db.py",
+          "line": 11,
+          "label": "psycopg pool"
+        }
+      ]
+    }
+  ],
+  "segments": [
+    {
+      "from": 152,
+      "to": 224,
+      "label": "Edge + state"
+    },
+    {
+      "from": 236,
+      "to": 336,
+      "label": "Jev routes"
+    },
+    {
+      "from": 348,
+      "to": 420,
+      "label": "Branch + persist"
+    },
+    {
+      "from": 432,
+      "to": 560,
+      "label": "Stream the reply"
+    }
+  ],
+  "messages": [
+    {
+      "id": "post",
+      "from": "web",
+      "to": "edge",
+      "y": 162,
+      "label": "POST /chat (SSE)",
+      "variant": "emphasis",
+      "note": "CloudFront → WAF → ALB; streaming passes through, no caching"
+    },
+    {
+      "id": "fwd",
+      "from": "edge",
+      "to": "api",
+      "y": 190,
+      "label": "forward to an api task",
+      "variant": "emphasis"
+    },
+    {
+      "id": "load",
+      "from": "api",
+      "to": "cache",
+      "y": 218,
+      "label": "GET conversation state",
+      "variant": "default",
+      "note": "memory + last 12 messages; miss → Aurora reader"
+    },
+    {
+      "id": "route",
+      "from": "api",
+      "to": "gw",
+      "y": 246,
+      "label": "decide() · jev-router",
+      "variant": "security",
+      "note": "the LiteLLM Proxy checks the per-route TPM/RPS budget first"
+    },
+    {
+      "id": "jev",
+      "from": "gw",
+      "to": "jev",
+      "y": 274,
+      "label": "/alpha/decisions",
+      "variant": "security",
+      "note": "5 questions in one call · p95 ≈ 0.8 s measured"
+    },
+    {
+      "id": "answers",
+      "from": "jev",
+      "to": "gw",
+      "y": 302,
+      "label": "typed probabilities",
+      "variant": "return"
+    },
+    {
+      "id": "routed",
+      "from": "gw",
+      "to": "api",
+      "y": 330,
+      "label": "answers + cost",
+      "variant": "return",
+      "note": "route() picks the branch in code"
+    },
+    {
+      "id": "extract",
+      "from": "api",
+      "to": "gw",
+      "y": 358,
+      "label": "extract-* (if branch needs it)",
+      "variant": "dashed",
+      "note": "429 or outage → Bedrock fallback"
+    },
+    {
+      "id": "save-user",
+      "from": "api",
+      "to": "db",
+      "y": 386,
+      "label": "insert user msg (RDS Proxy)",
+      "variant": "default",
+      "note": "PII redacted when pii_overshare ≥ 0.7"
+    },
+    {
+      "id": "meta",
+      "from": "api",
+      "to": "web",
+      "y": 414,
+      "label": "SSE meta",
+      "variant": "return",
+      "note": "route, cards, verified customer"
+    },
+    {
+      "id": "stream",
+      "from": "api",
+      "to": "gw",
+      "y": 442,
+      "label": "stream claimchat-reply",
+      "variant": "emphasis"
+    },
+    {
+      "id": "llm",
+      "from": "gw",
+      "to": "llm",
+      "y": 470,
+      "label": "stream completion",
+      "variant": "emphasis",
+      "note": "KB prefix is stable, so OpenAI prompt caching applies"
+    },
+    {
+      "id": "tokens",
+      "from": "api",
+      "to": "web",
+      "y": 498,
+      "label": "SSE token*",
+      "variant": "return",
+      "note": "p95 full reply ≈ 4.2 s measured"
+    },
+    {
+      "id": "save",
+      "from": "api",
+      "to": "db",
+      "y": 526,
+      "label": "insert reply · update state",
+      "variant": "default",
+      "note": "and SET state in ElastiCache"
+    },
+    {
+      "id": "done",
+      "from": "api",
+      "to": "web",
+      "y": 554,
+      "label": "SSE done",
+      "variant": "return",
+      "note": "Langfuse gets every call async via OTEL batch export"
+    }
+  ],
+  "activations": [
+    {
+      "participant": "web",
+      "from": 158,
+      "to": 558,
+      "type": "frontend"
+    },
+    {
+      "participant": "api",
+      "from": 190,
+      "to": 558,
+      "type": "backend"
+    },
+    {
+      "participant": "gw",
+      "from": 246,
+      "to": 474,
+      "type": "backend"
+    },
+    {
+      "participant": "jev",
+      "from": 270,
+      "to": 306,
+      "type": "external"
+    },
+    {
+      "participant": "llm",
+      "from": 466,
+      "to": 478,
+      "type": "external"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "violet",
+      "title": "Hot path budget",
+      "items": [
+        "Jev router ≈ 0.37 s p50 / 0.79 s p95; full reply ≈ 2.4 s p50 / 4.2 s p95 (measured)",
+        "Target p95 first token < 1.5 s: the state read moves from Postgres to ElastiCache"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "One gateway",
+      "items": [
+        "Jev and gpt-4o-mini both pass the LiteLLM Proxy: one limiter, one set of keys (llm.py:16-34)",
+        "Bedrock is the LLM fallback; JEV_FALLBACK=1 is the Jev breaker (jev.py:26)"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "Off the hot path",
+      "items": [
+        "Langfuse export is batched OTEL, so tracing never adds latency",
+        "Test Lab suites run on SQS workers, never on api tasks"
+      ]
+    }
+  ]
+}

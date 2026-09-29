@@ -1,0 +1,262 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "PilotKit on AWS — when to move up a tier",
+    "output": "docs/diagrams/workflow-pilotkit-aws-scaling-20260930-000203/pilotkit-aws-scaling.html",
+    "quality_profile": "showcase",
+    "animation": "trace",
+    "locale": "en",
+    "repository": {
+      "url": "https://localhost/pilotkit/persistance_dev.git",
+      "link_mode": "local-only",
+      "revision": "6c0aabebd10cf6b4aa10628dc22df78f64ebbea9"
+    }
+  },
+  "lanes": [
+    {
+      "id": "alarm",
+      "label": "CloudWatch alarm"
+    },
+    {
+      "id": "tier",
+      "label": "Tier (what changes)"
+    },
+    {
+      "id": "code",
+      "label": "Code change first",
+      "variant": "exception"
+    }
+  ],
+  "phases": [
+    {
+      "id": "p1",
+      "label": "Today → 1k",
+      "fromCol": 0,
+      "toCol": 0
+    },
+    {
+      "id": "p2",
+      "label": "10k",
+      "fromCol": 1,
+      "toCol": 1
+    },
+    {
+      "id": "p3",
+      "label": "100k",
+      "fromCol": 2,
+      "toCol": 2,
+      "variant": "emphasis"
+    },
+    {
+      "id": "p4",
+      "label": "1M",
+      "fromCol": 3,
+      "toCol": 3,
+      "variant": "dashed"
+    }
+  ],
+  "mainPath": [
+    "t1",
+    "t2",
+    "t3",
+    "t4"
+  ],
+  "nodes": [
+    {
+      "id": "t1",
+      "lane": "tier",
+      "col": 0,
+      "type": "frontend",
+      "label": "T1 · 1k MAU",
+      "sublabel": "ECS · RDS · 1 AZ",
+      "width": 120
+    },
+    {
+      "id": "a1",
+      "lane": "alarm",
+      "col": 1,
+      "type": "messagebus",
+      "label": "CPU or uptime",
+      "sublabel": "CPU > 60% · 2-AZ SLA",
+      "width": 120
+    },
+    {
+      "id": "t2",
+      "lane": "tier",
+      "col": 1,
+      "type": "frontend",
+      "label": "T2 · 10k MAU",
+      "sublabel": "Multi-AZ · autoscale",
+      "width": 120
+    },
+    {
+      "id": "a2",
+      "lane": "alarm",
+      "col": 2,
+      "type": "messagebus",
+      "label": "DB conns or 429s",
+      "sublabel": "conns > 80% · 429 > 1%",
+      "width": 120
+    },
+    {
+      "id": "t3",
+      "lane": "tier",
+      "col": 2,
+      "type": "frontend",
+      "label": "T3 · 100k MAU",
+      "sublabel": "LiteLLM Proxy · Aurora",
+      "width": 120,
+      "sources": [
+        {
+          "path": "api/app/llm.py",
+          "line": 16,
+          "end_line": 34,
+          "label": "session + acall"
+        }
+      ]
+    },
+    {
+      "id": "c3",
+      "lane": "code",
+      "col": 2,
+      "type": "security",
+      "label": "OTP identity",
+      "sublabel": "not name-only",
+      "width": 120,
+      "sources": [
+        {
+          "path": "api/app/bot.py",
+          "line": 174,
+          "end_line": 206,
+          "label": "n_identify (name-only today)"
+        }
+      ]
+    },
+    {
+      "id": "a3",
+      "lane": "alarm",
+      "col": 3,
+      "type": "messagebus",
+      "label": "Size or RTO",
+      "sublabel": "> 500 GB · RTO < 1 h",
+      "width": 120
+    },
+    {
+      "id": "t4",
+      "lane": "tier",
+      "col": 3,
+      "type": "frontend",
+      "label": "T4 · 1M MAU",
+      "sublabel": "partitions · SQS · DR",
+      "width": 120
+    },
+    {
+      "id": "c4",
+      "lane": "code",
+      "col": 3,
+      "type": "security",
+      "label": "Cache state",
+      "sublabel": "no full-history reads",
+      "width": 120,
+      "sources": [
+        {
+          "path": "api/app/main.py",
+          "line": 89,
+          "end_line": 117,
+          "label": "/chat SSE"
+        },
+        {
+          "path": "api/app/bot.py",
+          "line": 407,
+          "end_line": 443,
+          "label": "chat_turn"
+        }
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "id": "up1",
+      "from": "t1",
+      "to": "t2",
+      "label": "scale up",
+      "variant": "emphasis"
+    },
+    {
+      "id": "up2",
+      "from": "t2",
+      "to": "t3",
+      "label": "scale up",
+      "variant": "emphasis"
+    },
+    {
+      "id": "up3",
+      "from": "t3",
+      "to": "t4",
+      "label": "scale up",
+      "variant": "emphasis"
+    },
+    {
+      "id": "fire1",
+      "from": "a1",
+      "to": "t2",
+      "label": "triggers",
+      "variant": "dashed"
+    },
+    {
+      "id": "fire2",
+      "from": "a2",
+      "to": "t3",
+      "label": "triggers",
+      "variant": "dashed"
+    },
+    {
+      "id": "fire3",
+      "from": "a3",
+      "to": "t4",
+      "label": "triggers",
+      "variant": "dashed"
+    },
+    {
+      "id": "gate3",
+      "from": "c3",
+      "to": "t3",
+      "label": "ship first",
+      "variant": "security"
+    },
+    {
+      "id": "gate4",
+      "from": "c4",
+      "to": "t4",
+      "label": "ship first",
+      "variant": "security"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Scale on signals, not on MAU",
+      "items": [
+        "Each step is triggered by a CloudWatch alarm, not a user count",
+        "p95 first token > 1.5 s or error rate > 0.5% for 15 min pages on-call at every tier"
+      ]
+    },
+    {
+      "dot": "violet",
+      "title": "Code before infra",
+      "items": [
+        "OTP identity must ship before real customer traffic (bot.py:174-206)",
+        "Full history is re-read every turn today (bot.py:407-412); cache it before T4"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "Model limits scale too",
+      "items": [
+        "Raise the OpenAI usage tier ahead of each step: peak TPM grows 10× per tier",
+        "Confirm Jev rate limits with OpenRouter; JEV_FALLBACK is the breaker (jev.py:26)"
+      ]
+    }
+  ]
+}

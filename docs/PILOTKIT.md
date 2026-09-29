@@ -343,6 +343,7 @@ A `choice` question, `next_move`, with the options continue, switch_topic, escal
 6. **Test Lab:** run 9 personas with the broken prompt, then the production prompt. The compare view shows the delta per criterion (disclosure, no PII echo, identity safety, mis-selling…). The review queue holds only the uncertain criteria.
 
 ## 12. Roadmap (week 2+)
+- Production on AWS, from 1k to 1M MAU, with the code changes each tier needs: [`scaling-aws.md`](scaling-aws.md).
 - Channels: SMS (Twilio) and voice (Pipecat or LiveKit) on the same bot graph.
 - Call/Chat Receipts: the judge's `outcome` choice, sent as an SMS summary.
 - A lending template as the second vertical.

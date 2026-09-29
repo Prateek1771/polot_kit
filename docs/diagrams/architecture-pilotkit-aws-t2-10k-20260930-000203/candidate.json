@@ -1,0 +1,473 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "PilotKit on AWS — T2 · 10k MAU",
+    "output": "docs/diagrams/architecture-pilotkit-aws-t2-10k-20260930-000203/pilotkit-aws-t2-10k.html",
+    "quality_profile": "showcase",
+    "animation": "trace",
+    "locale": "en",
+    "repository": {
+      "url": "https://localhost/pilotkit/persistance_dev.git",
+      "link_mode": "local-only",
+      "revision": "6c0aabebd10cf6b4aa10628dc22df78f64ebbea9"
+    }
+  },
+  "components": [
+    {
+      "id": "users",
+      "type": "external",
+      "label": "Users",
+      "sublabel": "browser · mobile web",
+      "pos": [
+        40,
+        230
+      ],
+      "size": [
+        150,
+        64
+      ]
+    },
+    {
+      "id": "edge",
+      "type": "cloud",
+      "label": "CloudFront + WAF",
+      "sublabel": "TLS · static assets",
+      "pos": [
+        240,
+        230
+      ],
+      "size": [
+        150,
+        64
+      ]
+    },
+    {
+      "id": "alb",
+      "type": "security",
+      "label": "Application LB",
+      "sublabel": "HTTPS · idle 120 s (SSE)",
+      "pos": [
+        460,
+        230
+      ],
+      "size": [
+        150,
+        64
+      ]
+    },
+    {
+      "id": "web",
+      "type": "frontend",
+      "label": "ECS Fargate · web",
+      "sublabel": "Next.js · 2 tasks",
+      "pos": [
+        690,
+        80
+      ],
+      "size": [
+        150,
+        64
+      ],
+      "sources": [
+        {
+          "path": "web/lib/api.ts",
+          "line": 1,
+          "end_line": 38,
+          "label": "fetch + SSE reader"
+        }
+      ]
+    },
+    {
+      "id": "api",
+      "type": "backend",
+      "label": "ECS Fargate · api",
+      "sublabel": "2–4 tasks · CPU autoscale",
+      "pos": [
+        690,
+        230
+      ],
+      "size": [
+        150,
+        64
+      ],
+      "sources": [
+        {
+          "path": "api/app/main.py",
+          "line": 89,
+          "end_line": 117,
+          "label": "/chat SSE"
+        },
+        {
+          "path": "api/app/bot.py",
+          "line": 407,
+          "end_line": 443,
+          "label": "chat_turn"
+        }
+      ]
+    },
+    {
+      "id": "nat",
+      "type": "cloud",
+      "label": "NAT gateway",
+      "sublabel": "1 per AZ",
+      "pos": [
+        1210,
+        230
+      ],
+      "size": [
+        150,
+        64
+      ]
+    },
+    {
+      "id": "secrets",
+      "type": "security",
+      "label": "Secrets Manager",
+      "sublabel": "OpenRouter + OpenAI keys",
+      "pos": [
+        460,
+        380
+      ],
+      "size": [
+        150,
+        64
+      ]
+    },
+    {
+      "id": "rds",
+      "type": "database",
+      "label": "RDS PostgreSQL Multi-AZ",
+      "sublabel": "t4g.medium · sync standby",
+      "pos": [
+        690,
+        380
+      ],
+      "size": [
+        170,
+        64
+      ],
+      "sources": [
+        {
+          "path": "api/app/schema.sql",
+          "line": 13,
+          "end_line": 41,
+          "label": "conversation, message"
+        },
+        {
+          "path": "api/app/db.py",
+          "line": 11,
+          "label": "psycopg pool"
+        }
+      ]
+    },
+    {
+      "id": "redis",
+      "type": "messagebus",
+      "label": "ElastiCache Redis",
+      "sublabel": "t4g.small + replica",
+      "pos": [
+        970,
+        380
+      ],
+      "size": [
+        150,
+        64
+      ],
+      "sources": [
+        {
+          "path": "api/app/worker.py",
+          "line": 28,
+          "end_line": 33,
+          "label": "arq settings"
+        },
+        {
+          "path": "docker-compose.yml",
+          "line": 14,
+          "end_line": 16
+        }
+      ]
+    },
+    {
+      "id": "worker",
+      "type": "backend",
+      "label": "ECS Fargate · worker",
+      "sublabel": "scale on queue depth",
+      "pos": [
+        970,
+        530
+      ],
+      "size": [
+        150,
+        64
+      ],
+      "sources": [
+        {
+          "path": "api/app/worker.py",
+          "line": 12,
+          "end_line": 33
+        },
+        {
+          "path": "api/app/sim.py",
+          "line": 66,
+          "end_line": 81,
+          "label": "run_suite"
+        }
+      ]
+    },
+    {
+      "id": "langfuse",
+      "type": "external",
+      "label": "Langfuse Cloud",
+      "sublabel": "OTEL traces per session",
+      "pos": [
+        1460,
+        80
+      ],
+      "size": [
+        170,
+        64
+      ],
+      "sources": [
+        {
+          "path": "api/app/llm.py",
+          "line": 9,
+          "end_line": 13,
+          "label": "langfuse_otel"
+        }
+      ]
+    },
+    {
+      "id": "jev",
+      "type": "external",
+      "label": "Jev · OpenRouter",
+      "sublabel": "/api/alpha/decisions",
+      "pos": [
+        1460,
+        230
+      ],
+      "size": [
+        170,
+        64
+      ],
+      "sources": [
+        {
+          "path": "api/app/jev.py",
+          "line": 30,
+          "end_line": 56,
+          "label": "JevProvider"
+        }
+      ]
+    },
+    {
+      "id": "openai",
+      "type": "external",
+      "label": "OpenAI",
+      "sublabel": "gpt-4o-mini",
+      "pos": [
+        1460,
+        380
+      ],
+      "size": [
+        170,
+        64
+      ],
+      "brand": "openai",
+      "sources": [
+        {
+          "path": "api/app/llm.py",
+          "line": 7,
+          "label": "LLM_MODEL"
+        }
+      ]
+    },
+    {
+      "id": "cicd",
+      "type": "cloud",
+      "label": "GitHub Actions → ECR",
+      "sublabel": "CodeDeploy blue/green",
+      "pos": [
+        460,
+        530
+      ],
+      "size": [
+        150,
+        64
+      ]
+    },
+    {
+      "id": "watch",
+      "type": "cloud",
+      "label": "CloudWatch",
+      "sublabel": "logs · alarms · SLOs",
+      "pos": [
+        1210,
+        530
+      ],
+      "size": [
+        150,
+        64
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "AWS ap-south-1 · 2 AZs",
+      "wraps": [
+        "alb",
+        "web",
+        "api",
+        "nat",
+        "secrets",
+        "rds",
+        "redis",
+        "worker",
+        "cicd",
+        "watch"
+      ],
+      "pad": 20
+    },
+    {
+      "kind": "security-group",
+      "label": "private app subnets",
+      "wraps": [
+        "web",
+        "api",
+        "rds",
+        "redis",
+        "worker"
+      ],
+      "pad": 12
+    }
+  ],
+  "connections": [
+    {
+      "id": "browse",
+      "from": "users",
+      "to": "edge",
+      "label": "HTTPS",
+      "variant": "emphasis"
+    },
+    {
+      "id": "origin",
+      "from": "edge",
+      "to": "alb",
+      "label": "origin",
+      "variant": "emphasis"
+    },
+    {
+      "id": "pages",
+      "from": "alb",
+      "to": "web",
+      "label": "/*"
+    },
+    {
+      "id": "chat",
+      "from": "alb",
+      "to": "api",
+      "label": "/chat · SSE",
+      "variant": "emphasis"
+    },
+    {
+      "id": "egress",
+      "from": "api",
+      "to": "nat",
+      "label": "LiteLLM in-process",
+      "variant": "emphasis"
+    },
+    {
+      "id": "decide",
+      "from": "nat",
+      "to": "jev",
+      "label": "jev/ provider",
+      "variant": "emphasis"
+    },
+    {
+      "id": "generate",
+      "from": "nat",
+      "to": "openai",
+      "label": "completions"
+    },
+    {
+      "id": "trace",
+      "from": "nat",
+      "to": "langfuse",
+      "label": "OTEL",
+      "variant": "dashed"
+    },
+    {
+      "id": "keys",
+      "from": "secrets",
+      "to": "api",
+      "label": "task env",
+      "variant": "dashed"
+    },
+    {
+      "id": "sql",
+      "from": "api",
+      "to": "rds",
+      "label": "psycopg"
+    },
+    {
+      "id": "enqueue",
+      "from": "api",
+      "to": "redis",
+      "label": "enqueue suites",
+      "variant": "dashed"
+    },
+    {
+      "id": "jobs",
+      "from": "redis",
+      "to": "worker",
+      "label": "arq"
+    },
+    {
+      "id": "scores",
+      "from": "worker",
+      "to": "rds",
+      "label": "scores"
+    },
+    {
+      "id": "deploy",
+      "from": "cicd",
+      "to": "worker",
+      "label": "deploy all services",
+      "variant": "dashed"
+    },
+    {
+      "id": "metrics",
+      "from": "worker",
+      "to": "watch",
+      "label": "metrics",
+      "variant": "dashed"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Load at this tier",
+      "items": [
+        "≈16k turns/day · peak ≈0.75 turns/s · ≈3 live streams",
+        "≈85k LLM tokens/min at peak · DB grows ≈1 GB/month"
+      ]
+    },
+    {
+      "dot": "violet",
+      "title": "Changed from T1",
+      "items": [
+        "RDS Multi-AZ, 2 AZs, NAT per AZ: survives an AZ outage",
+        "Autoscaling (api on CPU, worker on queue depth), WAF rate rules, CloudWatch alarms",
+        "CI/CD: GitHub Actions → ECR → CodeDeploy blue/green"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "Monthly cost (est.)",
+      "items": [
+        "Infra ≈ $650 · model spend ≈ $175",
+        "≈ $0.08 per MAU"
+      ]
+    }
+  ]
+}

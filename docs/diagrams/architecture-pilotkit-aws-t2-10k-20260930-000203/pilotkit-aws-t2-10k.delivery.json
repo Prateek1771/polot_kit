@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "1daff63e-dd43-4bfc-bb3a-f3f858467028",
+  "status": "current",
+  "command": "deliver",
+  "type": "architecture",
+  "input": "D:\\personal\\persistance_dev\\docs\\diagrams\\architecture-pilotkit-aws-t2-10k-20260930-000203\\candidate.json",
+  "output": "D:\\personal\\persistance_dev\\docs\\diagrams\\architecture-pilotkit-aws-t2-10k-20260930-000203\\pilotkit-aws-t2-10k.html",
+  "specification": {
+    "sha256": "4c1384874512cd72aac2e58024e3c0970174effa110593c28aa09d3774f9c4ca",
+    "bytes": 9398
+  },
+  "artifact": {
+    "sha256": "2e511127698b2e4b5235f1a723c52533b78394c4810e4906c9239cbad0e2545e",
+    "bytes": 783088
+  }
+}

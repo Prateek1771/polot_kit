@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "633a9111-c198-4b83-ab9d-46f8db41cd8b",
+  "status": "current",
+  "command": "deliver",
+  "type": "workflow",
+  "input": "D:\\personal\\persistance_dev\\docs\\diagrams\\workflow-pilotkit-aws-scaling-20260930-000203\\candidate.json",
+  "output": "D:\\personal\\persistance_dev\\docs\\diagrams\\workflow-pilotkit-aws-scaling-20260930-000203\\pilotkit-aws-scaling.html",
+  "specification": {
+    "sha256": "c618eae7dbc8861146c1fccffd5c18697d35adca764678cc682074d32c5a7cd6",
+    "bytes": 5753
+  },
+  "artifact": {
+    "sha256": "71826328e27d84ec3e31da37b94490ab2d757dc4a8aaa6c7ad611e638fd25ff2",
+    "bytes": 762611
+  }
+}

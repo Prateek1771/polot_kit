@@ -58,6 +58,7 @@ Seeded customers (fictional) are in `api/app/data/customers.yaml`: Priya Sharma,
 - **One chat turn:** `POST /chat` (SSE) → `bot.chat_turn()`. One Jev router call carries five questions (intent, injection, needs_human, pii_overshare, confirms). `route()` picks one branch: identify, my_policy, claim + tool gate, status, shop, coverage, refuse, handoff or clarify. The reply then streams back.
 - **Test Lab:** `POST /runs` enqueues an arq job. Each persona loops persona message → `chat_turn()` (the same path as live chat) → Jev `next_move`, for up to 8 turns. A Jev rubric scores each conversation, and `triage()` marks ≥ 0.7 pass, ≤ 0.3 fail, and anything between goes to human review.
 - **Diagrams:** interactive architecture, sequence, workflow and lifecycle diagrams, each with a WebM recording of its trace animation, are in [`docs/`](docs/README.md). Design rationale and trade-offs are in [`docs/PILOTKIT.md`](docs/PILOTKIT.md).
+- **Scaling on AWS:** [`docs/scaling-aws.md`](docs/scaling-aws.md) goes from 1k to 1M monthly active users in four tiers (ECS, RDS/Aurora, ElastiCache, LiteLLM Proxy + Bedrock fallback, ap-south-2 DR). It covers the measured load model, cost per tier and the alarms that trigger each step, with Archify diagrams.
 
 ## Stack
 - **Web:** Next.js 16 (App Router), Tailwind v4, shadcn (Base UI), GSAP ScrollTrigger, Phosphor icons, Geist + Plus Jakarta Sans.

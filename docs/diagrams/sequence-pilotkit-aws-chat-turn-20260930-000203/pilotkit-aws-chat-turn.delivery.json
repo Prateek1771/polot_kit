@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "a9c33c64-5ffe-4dc2-aa26-2027e3c83ac1",
+  "status": "current",
+  "command": "deliver",
+  "type": "sequence",
+  "input": "D:\\personal\\persistance_dev\\docs\\diagrams\\sequence-pilotkit-aws-chat-turn-20260930-000203\\candidate.json",
+  "output": "D:\\personal\\persistance_dev\\docs\\diagrams\\sequence-pilotkit-aws-chat-turn-20260930-000203\\pilotkit-aws-chat-turn.html",
+  "specification": {
+    "sha256": "700e4570a1f92989142a8521405ff474a095cb6cbb490c389ecad48a13a46ba1",
+    "bytes": 8185
+  },
+  "artifact": {
+    "sha256": "33df3fd2b856c4bdb090e550ff22692ec408a445df732c75037f892338473088",
+    "bytes": 767301
+  }
+}

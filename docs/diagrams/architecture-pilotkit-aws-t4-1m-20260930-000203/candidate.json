@@ -1,0 +1,614 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "PilotKit on AWS — T4 · 1M MAU",
+    "output": "docs/diagrams/architecture-pilotkit-aws-t4-1m-20260930-000203/pilotkit-aws-t4-1m.html",
+    "quality_profile": "showcase",
+    "animation": "trace",
+    "locale": "en",
+    "repository": {
+      "url": "https://localhost/pilotkit/persistance_dev.git",
+      "link_mode": "local-only",
+      "revision": "6c0aabebd10cf6b4aa10628dc22df78f64ebbea9"
+    }
+  },
+  "components": [
+    {
+      "id": "users",
+      "type": "external",
+      "label": "Users",
+      "sublabel": "browser · mobile web",
+      "pos": [
+        40,
+        210
+      ],
+      "size": [
+        150,
+        64
+      ]
+    },
+    {
+      "id": "edge",
+      "type": "cloud",
+      "label": "CloudFront + WAF",
+      "sublabel": "origin failover to DR",
+      "pos": [
+        240,
+        210
+      ],
+      "size": [
+        150,
+        64
+      ]
+    },
+    {
+      "id": "alb",
+      "type": "security",
+      "label": "Application LB",
+      "sublabel": "HTTPS · idle 120 s (SSE)",
+      "pos": [
+        460,
+        210
+      ],
+      "size": [
+        150,
+        64
+      ]
+    },
+    {
+      "id": "web",
+      "type": "frontend",
+      "label": "ECS · web",
+      "sublabel": "4–8 tasks",
+      "pos": [
+        690,
+        60
+      ],
+      "size": [
+        150,
+        64
+      ],
+      "sources": [
+        {
+          "path": "web/lib/api.ts",
+          "line": 1,
+          "end_line": 38,
+          "label": "fetch + SSE reader"
+        }
+      ]
+    },
+    {
+      "id": "api",
+      "type": "backend",
+      "label": "ECS · api",
+      "sublabel": "16–40 Graviton tasks",
+      "pos": [
+        690,
+        210
+      ],
+      "size": [
+        150,
+        64
+      ],
+      "sources": [
+        {
+          "path": "api/app/main.py",
+          "line": 89,
+          "end_line": 117,
+          "label": "/chat SSE"
+        },
+        {
+          "path": "api/app/bot.py",
+          "line": 407,
+          "end_line": 443,
+          "label": "chat_turn"
+        }
+      ]
+    },
+    {
+      "id": "litellm",
+      "type": "backend",
+      "label": "LiteLLM Proxy",
+      "sublabel": "keys · budgets · TPM limiter",
+      "pos": [
+        950,
+        210
+      ],
+      "size": [
+        170,
+        64
+      ],
+      "sources": [
+        {
+          "path": "api/app/llm.py",
+          "line": 16,
+          "end_line": 34,
+          "label": "session + acall"
+        }
+      ]
+    },
+    {
+      "id": "nat",
+      "type": "cloud",
+      "label": "NAT gateways",
+      "sublabel": "1 per AZ",
+      "pos": [
+        1210,
+        210
+      ],
+      "size": [
+        150,
+        64
+      ]
+    },
+    {
+      "id": "bedrock",
+      "type": "cloud",
+      "label": "Amazon Bedrock",
+      "sublabel": "provisioned fallback",
+      "pos": [
+        1210,
+        60
+      ],
+      "size": [
+        150,
+        64
+      ],
+      "sources": [
+        {
+          "path": "api/app/jev.py",
+          "line": 26,
+          "label": "JEV_FALLBACK"
+        }
+      ]
+    },
+    {
+      "id": "jev",
+      "type": "external",
+      "label": "Jev · OpenRouter",
+      "sublabel": "/api/alpha/decisions",
+      "pos": [
+        1460,
+        210
+      ],
+      "size": [
+        170,
+        64
+      ],
+      "sources": [
+        {
+          "path": "api/app/jev.py",
+          "line": 30,
+          "end_line": 56,
+          "label": "JevProvider"
+        }
+      ]
+    },
+    {
+      "id": "openai",
+      "type": "external",
+      "label": "OpenAI",
+      "sublabel": "gpt-4o-mini · scale tier",
+      "pos": [
+        1460,
+        60
+      ],
+      "size": [
+        170,
+        64
+      ],
+      "brand": "openai",
+      "sources": [
+        {
+          "path": "api/app/llm.py",
+          "line": 7,
+          "label": "LLM_MODEL"
+        }
+      ]
+    },
+    {
+      "id": "cognito",
+      "type": "security",
+      "label": "Cognito + SNS",
+      "sublabel": "OTP before policy data",
+      "pos": [
+        460,
+        360
+      ],
+      "size": [
+        150,
+        64
+      ],
+      "sources": [
+        {
+          "path": "api/app/bot.py",
+          "line": 174,
+          "end_line": 206,
+          "label": "n_identify (name-only today)"
+        }
+      ]
+    },
+    {
+      "id": "rdsproxy",
+      "type": "security",
+      "label": "RDS Proxy",
+      "sublabel": "pooled · fast failover",
+      "pos": [
+        690,
+        360
+      ],
+      "size": [
+        150,
+        64
+      ],
+      "sources": [
+        {
+          "path": "api/app/schema.sql",
+          "line": 13,
+          "end_line": 41,
+          "label": "conversation, message"
+        },
+        {
+          "path": "api/app/db.py",
+          "line": 11,
+          "label": "psycopg pool"
+        }
+      ]
+    },
+    {
+      "id": "redis",
+      "type": "messagebus",
+      "label": "ElastiCache cluster",
+      "sublabel": "state · catalog · limiter",
+      "pos": [
+        950,
+        360
+      ],
+      "size": [
+        170,
+        64
+      ],
+      "sources": [
+        {
+          "path": "api/app/worker.py",
+          "line": 28,
+          "end_line": 33,
+          "label": "arq settings"
+        },
+        {
+          "path": "docker-compose.yml",
+          "line": 14,
+          "end_line": 16
+        }
+      ]
+    },
+    {
+      "id": "langfuse",
+      "type": "backend",
+      "label": "Langfuse v4 cluster",
+      "sublabel": "ClickHouse ×3 · S3 events",
+      "pos": [
+        1210,
+        360
+      ],
+      "size": [
+        170,
+        64
+      ],
+      "sources": [
+        {
+          "path": "api/app/llm.py",
+          "line": 9,
+          "end_line": 13,
+          "label": "langfuse_otel"
+        }
+      ]
+    },
+    {
+      "id": "aurora",
+      "type": "database",
+      "label": "Aurora Global",
+      "sublabel": "writer + 2 readers · partitioned",
+      "pos": [
+        690,
+        510
+      ],
+      "size": [
+        170,
+        64
+      ],
+      "sources": [
+        {
+          "path": "api/app/schema.sql",
+          "line": 13,
+          "end_line": 41,
+          "label": "conversation, message"
+        },
+        {
+          "path": "api/app/db.py",
+          "line": 11,
+          "label": "psycopg pool"
+        }
+      ]
+    },
+    {
+      "id": "s3",
+      "type": "cloud",
+      "label": "S3 + Athena",
+      "sublabel": "archived partitions",
+      "pos": [
+        460,
+        510
+      ],
+      "size": [
+        150,
+        64
+      ]
+    },
+    {
+      "id": "sqs",
+      "type": "messagebus",
+      "label": "SQS",
+      "sublabel": "suite + judge jobs",
+      "pos": [
+        950,
+        510
+      ],
+      "size": [
+        170,
+        64
+      ],
+      "sources": [
+        {
+          "path": "api/app/worker.py",
+          "line": 12,
+          "end_line": 33
+        },
+        {
+          "path": "api/app/sim.py",
+          "line": 66,
+          "end_line": 81,
+          "label": "run_suite"
+        }
+      ]
+    },
+    {
+      "id": "worker",
+      "type": "backend",
+      "label": "ECS · Lab worker",
+      "sublabel": "0–N tasks · own queue",
+      "pos": [
+        950,
+        660
+      ],
+      "size": [
+        170,
+        64
+      ],
+      "sources": [
+        {
+          "path": "api/app/worker.py",
+          "line": 12,
+          "end_line": 33
+        },
+        {
+          "path": "api/app/sim.py",
+          "line": 66,
+          "end_line": 81,
+          "label": "run_suite"
+        }
+      ]
+    },
+    {
+      "id": "dr",
+      "type": "cloud",
+      "label": "ap-south-2 warm standby",
+      "sublabel": "Aurora secondary · ECS min",
+      "pos": [
+        690,
+        830
+      ],
+      "size": [
+        170,
+        64
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "AWS ap-south-1 · 3 AZs",
+      "wraps": [
+        "alb",
+        "web",
+        "api",
+        "litellm",
+        "nat",
+        "bedrock",
+        "cognito",
+        "rdsproxy",
+        "redis",
+        "langfuse",
+        "aurora",
+        "s3",
+        "sqs",
+        "worker"
+      ],
+      "pad": 20
+    },
+    {
+      "kind": "security-group",
+      "label": "private app + data subnets",
+      "wraps": [
+        "web",
+        "api",
+        "litellm",
+        "rdsproxy",
+        "redis",
+        "aurora",
+        "sqs",
+        "worker"
+      ],
+      "pad": 12
+    },
+    {
+      "kind": "region",
+      "label": "AWS ap-south-2 · DR",
+      "wraps": [
+        "dr"
+      ],
+      "pad": 16
+    }
+  ],
+  "connections": [
+    {
+      "id": "browse",
+      "from": "users",
+      "to": "edge",
+      "label": "HTTPS",
+      "variant": "emphasis"
+    },
+    {
+      "id": "origin",
+      "from": "edge",
+      "to": "alb",
+      "label": "origin",
+      "variant": "emphasis"
+    },
+    {
+      "id": "pages",
+      "from": "alb",
+      "to": "web",
+      "label": "/*"
+    },
+    {
+      "id": "chat",
+      "from": "alb",
+      "to": "api",
+      "label": "/chat · SSE",
+      "variant": "emphasis"
+    },
+    {
+      "id": "calls",
+      "from": "api",
+      "to": "litellm",
+      "label": "Jev + LLM calls",
+      "variant": "emphasis"
+    },
+    {
+      "id": "egress",
+      "from": "litellm",
+      "to": "nat",
+      "label": "egress",
+      "variant": "emphasis"
+    },
+    {
+      "id": "decide",
+      "from": "nat",
+      "to": "jev",
+      "label": "jev/ provider",
+      "variant": "emphasis"
+    },
+    {
+      "id": "generate",
+      "from": "nat",
+      "to": "openai",
+      "label": "completions"
+    },
+    {
+      "id": "fallback",
+      "from": "litellm",
+      "to": "bedrock",
+      "label": "on 429 / outage",
+      "variant": "dashed"
+    },
+    {
+      "id": "trace",
+      "from": "litellm",
+      "to": "langfuse",
+      "label": "OTEL",
+      "variant": "dashed"
+    },
+    {
+      "id": "otp",
+      "from": "api",
+      "to": "cognito",
+      "label": "OTP challenge",
+      "variant": "security"
+    },
+    {
+      "id": "pool",
+      "from": "api",
+      "to": "rdsproxy",
+      "label": "SQL"
+    },
+    {
+      "id": "sql",
+      "from": "rdsproxy",
+      "to": "aurora",
+      "label": "pooled conns"
+    },
+    {
+      "id": "state",
+      "from": "api",
+      "to": "redis",
+      "label": "conversation state",
+      "variant": "dashed"
+    },
+    {
+      "id": "enqueue",
+      "from": "api",
+      "to": "sqs",
+      "label": "enqueue suites",
+      "variant": "dashed"
+    },
+    {
+      "id": "jobs",
+      "from": "sqs",
+      "to": "worker",
+      "label": "poll"
+    },
+    {
+      "id": "archive",
+      "from": "aurora",
+      "to": "s3",
+      "label": "archive",
+      "variant": "dashed"
+    },
+    {
+      "id": "replicate",
+      "from": "aurora",
+      "to": "dr",
+      "label": "global DB · RPO < 1 s",
+      "variant": "dashed"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Load at this tier",
+      "items": [
+        "≈1.6M turns/day · peak ≈75 turns/s (design for 150) · ≈320 live streams",
+        "≈8.4M LLM tokens/min and ≈80 Jev req/s at peak · DB grows ≈115 GB/month"
+      ]
+    },
+    {
+      "dot": "violet",
+      "title": "Changed from T3",
+      "items": [
+        "message partitioned monthly, cold months to S3 + Athena; state cached in ElastiCache",
+        "Test Lab on SQS + its own worker pool: suites never starve live chat",
+        "Aurora Global Database + warm standby in ap-south-2 (RTO < 1 h)"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "Monthly cost (est.)",
+      "items": [
+        "Infra ≈ $11k · model spend ≈ $17.3k",
+        "≈ $0.028 per MAU; model spend is ~60% of it"
+      ]
+    }
+  ]
+}
