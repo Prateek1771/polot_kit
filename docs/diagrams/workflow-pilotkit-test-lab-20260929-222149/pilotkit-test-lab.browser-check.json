@@ -6,10 +6,10 @@
   "status": "pass",
   "visualReview": "not-requested",
   "provenance": "current",
-  "deliveryReceiptId": "98448d27-689d-4104-b708-1444fd22f939",
+  "deliveryReceiptId": "269ef280-d0cf-4305-ac61-b53bbb09c08d",
   "artifact": {
     "path": "D:\\personal\\persistance_dev\\docs\\diagrams\\workflow-pilotkit-test-lab-20260929-222149\\pilotkit-test-lab.html",
-    "sha256": "751fa1fdaad9e8a60c3d95a7aaca8d3a3bb18663f6b508d3f854731715941e83",
+    "sha256": "e8714aa4091aedd4698bfb438734666c17574d1539a73e9fc259a7fd26c0372b",
     "bytes": 770023
   },
   "state": {

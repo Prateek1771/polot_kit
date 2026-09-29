@@ -6,10 +6,10 @@
   "status": "pass",
   "visualReview": "not-requested",
   "provenance": "current",
-  "deliveryReceiptId": "f409eed5-cbff-4a2d-8aba-02e73f9df551",
+  "deliveryReceiptId": "33a87d57-badd-4559-b66c-0ab9dd3c3662",
   "artifact": {
     "path": "D:\\personal\\persistance_dev\\docs\\diagrams\\sequence-pilotkit-chat-turn-20260929-222149\\pilotkit-chat-turn.html",
-    "sha256": "ccd6ae298dfbf5112d6ce64d18d2d09d977861a90a710b5a476e75869dbc2eb0",
+    "sha256": "7cc1e065fbcbe31fb99bd14c2a928570fa8db8d14a1554daab248aee797d6081",
     "bytes": 765373
   },
   "state": {

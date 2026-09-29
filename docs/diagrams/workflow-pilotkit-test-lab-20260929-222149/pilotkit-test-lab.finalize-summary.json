@@ -7,12 +7,12 @@
   "quality": "showcase",
   "specification": {
     "path": "D:\\personal\\persistance_dev\\docs\\diagrams\\workflow-pilotkit-test-lab-20260929-222149\\candidate.json",
-    "sha256": "d8939b0046de7a637a3120e0718058ff42a9e61b6cdc37e062ee76bbcfe0c3e1",
-    "bytes": 8742
+    "sha256": "b70eb206d1f4ba88760a43e81a4a2747299c5381e126aecb974a0907dbdfe039",
+    "bytes": 8347
   },
   "artifact": {
     "path": "D:\\personal\\persistance_dev\\docs\\diagrams\\workflow-pilotkit-test-lab-20260929-222149\\pilotkit-test-lab.html",
-    "sha256": "751fa1fdaad9e8a60c3d95a7aaca8d3a3bb18663f6b508d3f854731715941e83",
+    "sha256": "e8714aa4091aedd4698bfb438734666c17574d1539a73e9fc259a7fd26c0372b",
     "bytes": 770023
   },
   "gates": {
@@ -43,7 +43,7 @@
     "noticeText": null
   },
   "visualReview": "not-requested",
-  "durationMs": 4924,
+  "durationMs": 6678,
   "visualReviewRecommendation": {
     "action": "inspect-route-readability",
     "signals": {

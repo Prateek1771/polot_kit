@@ -299,7 +299,8 @@ async def n_shop(s: S) -> S:
         "The USER is shopping for insurance. Extract their needs. JSON only: "
         '{"category": "car"|"bike"|"health"|"term"|"travel"|null, "budget_inr": int|null (yearly), "age": int|null, '
         '"city": str|null, "members": str|null, "vehicle": str|null, "destination": str|null}. Use null for anything not stated; '
-        "convert '12k' to 12000 and monthly budgets to yearly.", "USER MESSAGES:\n" + user_msgs(s, last=6))
+        "convert '12k' to 12000; an amount with no period ('budget 30k') is already yearly, so 30000; "
+        "multiply by 12 only when the user says monthly / per month / pm.", "USER MESSAGES:\n" + user_msgs(s, last=6))
     cost += s.get("cost", 0)
     mem["profile"].update({k: found[k] for k in PROFILE if found.get(k)})
     prof = mem["profile"]

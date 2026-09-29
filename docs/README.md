@@ -1,6 +1,6 @@
 # PilotKit docs
 
-Four diagrams of how PilotKit works, generated with [Archify](https://github.com/tt-a1i/archify) from the code at commit `8b8478e`. Each one is a standalone HTML page you can pan, zoom and search. Each also has a 6-second **WebM recording** of its trace animation, which shows requests travelling along the arrows.
+Four diagrams of how PilotKit works, generated with [Archify](https://github.com/tt-a1i/archify) from the code at commit `0901a98`. Each one is a standalone HTML page you can pan, zoom and search. Each also has a 6-second **WebM recording** of its trace animation, which shows requests travelling along the arrows.
 
 | Diagram | What it shows | Open | Recording |
 |---|---|---|---|
@@ -21,7 +21,7 @@ Open an `.html` file straight in a browser; there's no server and no network. Vi
   - `candidate.json`: the typed diagram spec.
   - The rendered `.html`.
   - Archify's delivery receipts (`*.finalize*.json`, `*.browser-check.json`): validation, a strict artifact check and a real-browser check, all passing. `review-2/` and `review-3/` hold the architecture's layout-review rounds.
-- **Source evidence:** every node cites repository-relative file and line ranges, verified against the blobs at commit `8b8478e`.
+- **Source evidence:** every node cites repository-relative file and line ranges, verified against the blobs at commit `0901a98`.
 - **Placeholder origin:** the repo has no git remote, so the specs use a placeholder origin, `https://localhost/pilotkit/persistance_dev.git`, with `link_mode: local-only`. That address is only a repository identity; it isn't a real remote, and the diagrams make no web links.
 - **Recordings:** each WebM comes from the diagram viewer's own **Export → WebM** (MediaRecorder at 30 fps, VP9), driven headlessly.
 - **Regenerating:** change a `candidate.json` and run `node <archify>/bin/archify.mjs finalize <type> <candidate.json> <out.html> --repo-root <repo> --quality showcase`.

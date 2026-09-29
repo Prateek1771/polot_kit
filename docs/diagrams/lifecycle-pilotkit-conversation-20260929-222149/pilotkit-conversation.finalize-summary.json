@@ -7,12 +7,12 @@
   "quality": "showcase",
   "specification": {
     "path": "D:\\personal\\persistance_dev\\docs\\diagrams\\lifecycle-pilotkit-conversation-20260929-222149\\candidate.json",
-    "sha256": "e0a2d1261ba5d8d3a9912f878f18f71bbcf12465ac53344f79e91b37b6d3d248",
-    "bytes": 7078
+    "sha256": "e507817c652ba6952bc86fa69abb2d6fc337d41fcea5fdae8b6b9882b0f7feef",
+    "bytes": 6781
   },
   "artifact": {
     "path": "D:\\personal\\persistance_dev\\docs\\diagrams\\lifecycle-pilotkit-conversation-20260929-222149\\pilotkit-conversation.html",
-    "sha256": "e85dd4bde123bd6613ddc5d639c642f08ca264d8e2997cea8e8b05948f617441",
+    "sha256": "dbfb50dce6c48b3f32e4342a670ff34a7060d8860fd3a76ea36a49d569c64b8f",
     "bytes": 768702
   },
   "gates": {
@@ -43,5 +43,5 @@
     "noticeText": null
   },
   "visualReview": "not-requested",
-  "durationMs": 4117
+  "durationMs": 6194
 }

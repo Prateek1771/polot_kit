@@ -68,7 +68,8 @@ export default function ChatPage() {
   const endRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
-  useEffect(() => endRef.current?.scrollIntoView({ behavior: "smooth", block: "end" }), [msgs]);
+  // block body: newer browsers return a Promise from scrollIntoView, which React would call as the effect cleanup
+  useEffect(() => { endRef.current?.scrollIntoView({ behavior: "smooth", block: "end" }); }, [msgs]);
 
   const userTurns = msgs.map((m, i) => ({ m, i })).filter((x) => x.m.role === "user" && x.m.jev);
   const focus = selected ?? userTurns.at(-1)?.i ?? null;
