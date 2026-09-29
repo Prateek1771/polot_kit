@@ -143,9 +143,9 @@ def transcript(history: list[dict], user_text: str | None = None) -> str:
     return "\n".join(lines)
 
 
-async def extract(instruction: str, text: str) -> tuple[dict, float]:
+async def extract(instruction: str, text: str, name: str) -> tuple[dict, float]:
     """LLM extraction to JSON (Jev can't generate text). Bad JSON -> {}."""
-    out, cost = await llm.complete([{"role": "user", "content": f"{instruction}\nToday is {date.today()}.\n\n{text}"}], json_mode=True)
+    out, cost = await llm.complete([{"role": "user", "content": f"{instruction}\nToday is {date.today()}.\n\n{text}"}], json_mode=True, name=name)
     try:
         return json.loads(out), cost
     except json.JSONDecodeError:
@@ -163,7 +163,7 @@ async def n_router(s: S) -> S:
     answers = await jev.decide(
         {"conversation": transcript(s["history"], s["user_text"]), "claim_fields_so_far": mem.get("fields", {}),
          "customer_verified": bool(mem.get("customer")), "assistant_asked_for_full_name": bool(mem.get("awaiting_name"))},
-        SUITE["router"],
+        SUITE["router"], name="jev-router",
     )
     extra = []
     if jev.p(answers, "pii_overshare") >= T_PASS:
@@ -175,7 +175,7 @@ async def n_identify(s: S) -> S:
     mem = dict(s["memory"])
     found, cost = await extract(
         'The USER may have typed their full name. JSON only: {"full_name": str|null}. '
-        "Only a person's name they gave for themselves; null if none.", "USER MESSAGE:\n" + s["user_text"])
+        "Only a person's name they gave for themselves; null if none.", "USER MESSAGE:\n" + s["user_text"], "extract-name")
     cost += s.get("cost", 0)
     name = (found.get("full_name") or "").strip()
     if not name:
@@ -225,7 +225,7 @@ async def n_new_claim(s: S) -> S:
     found, cost = await extract(
         "Extract claim fields the USER stated. JSON only: "
         '{"policy_no": str|null, "incident_date": "YYYY-MM-DD"|null, "description": str|null}. '
-        "Use null for anything not stated. Resolve 'yesterday' etc." + hint, "USER MESSAGES:\n" + user_msgs(s))
+        "Use null for anything not stated. Resolve 'yesterday' etc." + hint, "USER MESSAGES:\n" + user_msgs(s), "extract-claim")
     changed = any(found.get(k) and found[k] != mem["fields"].get(k) for k in FIELDS)
     mem["fields"].update({k: found[k] for k in FIELDS if found.get(k)})
     missing = [k.replace("_", " ") for k in FIELDS if not mem["fields"].get(k)]
@@ -252,7 +252,7 @@ async def n_tool_gate(s: S) -> S:
     f = mem["fields"]
     known = [p["policy_no_full"] for p in (mem.get("customer") or {}).get("policies", [])]
     gate = await jev.decide({"fields": f, "verified_customer_policy_numbers": known,
-                             "transcript": transcript(s["history"], s["user_text"])}, SUITE["tool_gate"])
+                             "transcript": transcript(s["history"], s["user_text"])}, SUITE["tool_gate"], name="jev-tool-gate")
     cost = s.get("cost", 0) + gate["_meta"]["cost"]
     jev_all = {**s["jev"], "gate": gate["gate"]}
     if jev.p(gate, "gate") < T_PASS:
@@ -300,7 +300,7 @@ async def n_shop(s: S) -> S:
         '{"category": "car"|"bike"|"health"|"term"|"travel"|null, "budget_inr": int|null (yearly), "age": int|null, '
         '"city": str|null, "members": str|null, "vehicle": str|null, "destination": str|null}. Use null for anything not stated; '
         "convert '12k' to 12000; an amount with no period ('budget 30k') is already yearly, so 30000; "
-        "multiply by 12 only when the user says monthly / per month / pm.", "USER MESSAGES:\n" + user_msgs(s, last=6))
+        "multiply by 12 only when the user says monthly / per month / pm.", "USER MESSAGES:\n" + user_msgs(s, last=6), "extract-needs")
     cost += s.get("cost", 0)
     mem["profile"].update({k: found[k] for k in PROFILE if found.get(k)})
     prof = mem["profile"]
@@ -407,6 +407,7 @@ def system_prompt(variant: str, instructions: str, first_reply: bool, memory: di
 async def chat_turn(conv_id: str, user_text: str):
     """Runs one turn and yields events: meta -> token* -> done. Used by /chat and the simulator."""
     t0 = time.perf_counter()
+    llm.session(conv_id)  # every LLM + Jev call in this turn lands in the chat's Langfuse session
     conv = await db.one("select * from conversation where id=%s", conv_id)
     history = [{"role": m["role"], "content": m["content"]} for m in
                await db.many("select role, content from message where conversation_id=%s order by id", conv_id)]
@@ -424,7 +425,7 @@ async def chat_turn(conv_id: str, user_text: str):
     msgs = [{"role": "system", "content": system_prompt(conv["prompt_variant"], s.get("instructions", ""), not history, s["memory"], s["route"])},
             *history, {"role": "user", "content": stored_text}]
     reply, cost = "", 0.0
-    async for d in llm.stream(msgs, tags={"session_id": conv_id, "trace_name": "claimchat-reply"}):
+    async for d in llm.stream(msgs, name="claimchat-reply"):
         if isinstance(d, float):
             cost = d
         else:

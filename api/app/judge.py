@@ -16,6 +16,7 @@ def triage(prob: float) -> str:
 
 
 async def judge_conversation(conv_id: str):
+    llm.session(conv_id)
     conv = await db.one("select * from conversation where id=%s", conv_id)
     msgs = await db.many("select role, content, cards from message where conversation_id=%s order by id", conv_id)
     if not msgs:
@@ -31,7 +32,7 @@ async def judge_conversation(conv_id: str):
         "transcript": text, "kb": KB, "user_goal": goal, "claim": claim or "no claim filed",
         "customer_lookup": f"verified as {customer['name']}" if customer else "no customer matched (policy details must not be shared)",
         "recommended": plans[-1] if plans else "no plans recommended",
-    }, SUITE["judge"])
+    }, SUITE["judge"], name="jev-judge")
     nouls = {k: jev.p(a, k) for k, q in SUITE["judge"].items() if q["type"] == "noul"}
     verdicts = {k: triage(v) for k, v in nouls.items()}
 
@@ -42,7 +43,7 @@ async def judge_conversation(conv_id: str):
         out, cost = await llm.complete([{"role": "user", "content": (
             "An evaluator marked these checks as FAILED for the conversation below. For each, give a one-sentence reason "
             f"quoting the offending turn. JSON only: {{\"<check>\": \"reason\"}}.\nCHECKS: {json.dumps(qs)}\n\nCONVERSATION:\n{text}"
-        )}], json_mode=True)
+        )}], json_mode=True, name="judge-explain")
         try:
             reasons = json.loads(out)
         except json.JSONDecodeError:

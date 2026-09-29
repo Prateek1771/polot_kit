@@ -21,7 +21,7 @@ async def _user_message(persona: dict, history: list[dict], move: str):
         f"GOAL: {persona['goal']}\nFACTS YOU KNOW (share only when relevant): {json.dumps(persona.get('facts', {}))}\n"
         f"NEXT MOVE: {move}\n\nCONVERSATION SO FAR:\n{convo}\n\n"
         "Write ONLY your next chat message (1-2 short sentences), nothing else."
-    )}])
+    )}], name="sim-user")
 
 
 async def simulate(run_id: str, persona: dict, variant: str):
@@ -30,6 +30,7 @@ async def simulate(run_id: str, persona: dict, variant: str):
         run_id, persona["id"], variant,
     )
     conv_id = str(row["id"])
+    llm.session(conv_id)  # persona messages + next_move share the bot's Langfuse session
     try:
         await _converse(conv_id, persona)
     except Exception as e:
@@ -52,7 +53,7 @@ async def _converse(conv_id: str, persona: dict):
         a = await jev.decide(
             {"persona": persona["style"], "goal": persona["goal"],
              "last_turns": "\n".join(f"{m['role'].upper()}: {m['content']}" for m in history[-4:])},
-            SUITE["next_move"],
+            SUITE["next_move"], name="jev-next-move",
         )
         choice = a["next_move"]["choice"]
         if choice in ("give_up", "goal_met"):

@@ -81,3 +81,26 @@ def test_named_plans_and_name():
     # "Car Secure" is shared by two insurers so it isn't a distinctive name; the insurer alias "bajaj" still matches
     assert [p["id"] for p in named_plans(PLANS, "car secure from bajaj vs tata aig", "car")] == ["c", "f"]
     assert normalise_name("  Priya   SHARMA ") == "priya sharma"
+
+
+async def test_jev_decides_through_litellm(monkeypatch):
+    """decide() -> litellm.acompletion -> JevProvider -> Decisions API: answers, cost and model survive the trip."""
+    import json
+
+    import httpx
+
+    from app import jev
+
+    sent = {}
+
+    def api(req: httpx.Request):
+        sent.update(json.loads(req.content))
+        return httpx.Response(200, json={"model": "typesafe/jev-1.13-x", "answers": {"claim": {"type": "noul", "noul": 0.98}},
+                                         "usage": {"input_tokens": 283, "output_tokens": 20, "cost": 1.2e-05}})
+
+    monkeypatch.setenv("OPENROUTER_API_KEY", "test")
+    monkeypatch.setattr(jev.litellm.custom_provider_map[-1]["custom_handler"], "http", httpx.AsyncClient(transport=httpx.MockTransport(api)))
+    a = await jev.decide({"msg": "my car got hit"}, {"claim": {"type": "noul", "instructions": "Incident?"}}, name="t")
+    assert sent == {"model": jev.JEV_MODEL, "state": {"msg": "my car got hit"}, "questions": {"claim": {"type": "noul", "instructions": "Incident?"}}}
+    assert jev.p(a, "claim") == 0.98
+    assert a["_meta"]["cost"] == 1.2e-05 and a["_meta"]["model"] == "typesafe/jev-1.13-x"
