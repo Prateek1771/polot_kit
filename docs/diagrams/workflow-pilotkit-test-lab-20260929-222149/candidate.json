@@ -1,0 +1,396 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "PilotKit — Test Lab suite run",
+    "output": "docs/diagrams/workflow-pilotkit-test-lab-20260929-222149/pilotkit-test-lab.html",
+    "animation": "trace",
+    "quality_profile": "showcase",
+    "locale": "en",
+    "repository": {
+      "url": "https://localhost/pilotkit/persistance_dev.git",
+      "link_mode": "local-only",
+      "revision": "8b8478ebde25c3d7d80b5aa3f7ad3da8fc3db202"
+    }
+  },
+  "lanes": [
+    {
+      "id": "lab",
+      "label": "Test Lab UI"
+    },
+    {
+      "id": "queue",
+      "label": "API + arq"
+    },
+    {
+      "id": "sim",
+      "label": "Simulated conversation"
+    },
+    {
+      "id": "judge",
+      "label": "Jev judge"
+    },
+    {
+      "id": "people",
+      "label": "Human review · errors",
+      "variant": "exception"
+    }
+  ],
+  "phases": [
+    {
+      "id": "launch",
+      "label": "Launch",
+      "fromCol": 0,
+      "toCol": 1
+    },
+    {
+      "id": "converse",
+      "label": "Simulate ≤ 8 turns",
+      "fromCol": 2,
+      "toCol": 3,
+      "variant": "emphasis"
+    },
+    {
+      "id": "grade",
+      "label": "Grade + triage",
+      "fromCol": 4,
+      "toCol": 5,
+      "variant": "dashed"
+    }
+  ],
+  "groups": [
+    {
+      "id": "turn_loop",
+      "label": "Turn loop",
+      "lane": "sim",
+      "fromCol": 2,
+      "toCol": 4,
+      "variant": "emphasis"
+    }
+  ],
+  "mainPath": [
+    "start",
+    "post_runs",
+    "suite_job",
+    "persona_msg",
+    "bot_turn",
+    "next_move",
+    "rubric",
+    "triage",
+    "report"
+  ],
+  "nodes": [
+    {
+      "id": "start",
+      "lane": "lab",
+      "col": 0,
+      "type": "frontend",
+      "label": "Start run",
+      "sublabel": "broken / production",
+      "width": 132,
+      "sources": [
+        {
+          "path": "web/app/lab/page.tsx",
+          "line": 43,
+          "end_line": 52
+        }
+      ]
+    },
+    {
+      "id": "report",
+      "lane": "lab",
+      "col": 5,
+      "type": "frontend",
+      "label": "Report + compare",
+      "sublabel": "pass rate · p95 · cost",
+      "width": 132,
+      "sources": [
+        {
+          "path": "api/app/main.py",
+          "line": 200,
+          "end_line": 268,
+          "label": "run_stats / compare"
+        }
+      ]
+    },
+    {
+      "id": "post_runs",
+      "lane": "queue",
+      "col": 1,
+      "type": "backend",
+      "label": "POST /runs",
+      "sublabel": "insert run, enqueue",
+      "width": 132,
+      "sources": [
+        {
+          "path": "api/app/main.py",
+          "line": 168,
+          "end_line": 173
+        }
+      ]
+    },
+    {
+      "id": "suite_job",
+      "lane": "queue",
+      "col": 2,
+      "type": "messagebus",
+      "label": "run_suite_job",
+      "sublabel": "9 personas · 5 at once",
+      "width": 132,
+      "sources": [
+        {
+          "path": "api/app/worker.py",
+          "line": 12,
+          "end_line": 17
+        },
+        {
+          "path": "api/app/sim.py",
+          "line": 65,
+          "end_line": 80
+        }
+      ]
+    },
+    {
+      "id": "persona_msg",
+      "lane": "sim",
+      "col": 2,
+      "type": "external",
+      "label": "Persona message",
+      "sublabel": "gpt-4o-mini plays user",
+      "width": 132,
+      "sources": [
+        {
+          "path": "api/app/sim.py",
+          "line": 17,
+          "end_line": 24
+        }
+      ]
+    },
+    {
+      "id": "bot_turn",
+      "lane": "sim",
+      "col": 3,
+      "type": "backend",
+      "label": "chat_turn()",
+      "sublabel": "same path as live chat",
+      "width": 132,
+      "sources": [
+        {
+          "path": "api/app/sim.py",
+          "line": 43,
+          "end_line": 50
+        },
+        {
+          "path": "api/app/bot.py",
+          "line": 406,
+          "end_line": 441
+        }
+      ]
+    },
+    {
+      "id": "next_move",
+      "lane": "sim",
+      "col": 4,
+      "type": "security",
+      "label": "Jev next_move",
+      "sublabel": "choice over 5 moves",
+      "width": 132,
+      "sources": [
+        {
+          "path": "api/app/sim.py",
+          "line": 52,
+          "end_line": 61
+        },
+        {
+          "path": "api/app/data/insurance.yaml",
+          "line": 102,
+          "end_line": 111
+        }
+      ]
+    },
+    {
+      "id": "rubric",
+      "lane": "judge",
+      "col": 4,
+      "type": "security",
+      "label": "Jev rubric",
+      "sublabel": "8 nouls + outcome",
+      "width": 132,
+      "sources": [
+        {
+          "path": "api/app/judge.py",
+          "line": 18,
+          "end_line": 39
+        }
+      ]
+    },
+    {
+      "id": "triage",
+      "lane": "judge",
+      "col": 5,
+      "type": "security",
+      "label": "triage()",
+      "sublabel": "≥0.7 pass · ≤0.3 fail",
+      "width": 132,
+      "sources": [
+        {
+          "path": "api/app/judge.py",
+          "line": 10,
+          "end_line": 15
+        },
+        {
+          "path": "api/app/judge.py",
+          "line": 50,
+          "end_line": 63,
+          "label": "write scores"
+        }
+      ]
+    },
+    {
+      "id": "review",
+      "lane": "people",
+      "col": 5,
+      "type": "external",
+      "label": "Review queue",
+      "sublabel": "human pass / fail",
+      "width": 132,
+      "sources": [
+        {
+          "path": "api/app/main.py",
+          "line": 271,
+          "end_line": 291
+        }
+      ]
+    },
+    {
+      "id": "sim_error",
+      "lane": "people",
+      "col": 3,
+      "type": "messagebus",
+      "label": "status = error",
+      "sublabel": "not graded",
+      "width": 132,
+      "sources": [
+        {
+          "path": "api/app/sim.py",
+          "line": 31,
+          "end_line": 38
+        }
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "id": "launch-run",
+      "from": "start",
+      "to": "post_runs",
+      "label": "prompt variant",
+      "variant": "emphasis"
+    },
+    {
+      "id": "enqueue-run",
+      "from": "post_runs",
+      "to": "suite_job",
+      "label": "enqueue",
+      "variant": "dashed",
+      "role": "async"
+    },
+    {
+      "id": "per-persona",
+      "from": "suite_job",
+      "to": "persona_msg",
+      "label": "per persona"
+    },
+    {
+      "id": "send-user-msg",
+      "from": "persona_msg",
+      "to": "bot_turn",
+      "label": "user message",
+      "variant": "emphasis"
+    },
+    {
+      "id": "bot-reply",
+      "from": "bot_turn",
+      "to": "next_move",
+      "label": "reply",
+      "variant": "emphasis"
+    },
+    {
+      "id": "keep-going",
+      "from": "next_move",
+      "to": "persona_msg",
+      "label": "continue · switch · escalate",
+      "role": "return",
+      "route": "up-channel"
+    },
+    {
+      "id": "conversation-ends",
+      "from": "next_move",
+      "to": "rubric",
+      "label": "give_up · goal_met · 8 turns",
+      "variant": "emphasis"
+    },
+    {
+      "id": "grade",
+      "from": "rubric",
+      "to": "triage",
+      "label": "probabilities"
+    },
+    {
+      "id": "decided",
+      "from": "triage",
+      "to": "report",
+      "label": "pass / fail",
+      "variant": "emphasis"
+    },
+    {
+      "id": "uncertain",
+      "from": "triage",
+      "to": "review",
+      "label": "0.3 < p < 0.7",
+      "variant": "security",
+      "role": "branch"
+    },
+    {
+      "id": "human-label",
+      "from": "review",
+      "to": "report",
+      "label": "label overrides",
+      "role": "return"
+    },
+    {
+      "id": "turn-failed",
+      "from": "bot_turn",
+      "to": "sim_error",
+      "label": "exception",
+      "variant": "security",
+      "role": "error"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "violet",
+      "title": "Jev plays both sides",
+      "items": [
+        "Simulated users pick their next move with a Jev choice (sim.py:52-61)",
+        "The judge asks all rubric questions in one Jev request (judge.py:30-35)"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "LLM only explains",
+      "items": [
+        "gpt-4o-mini writes persona messages (sim.py:17-24)",
+        "It explains failed criteria only, never grades (judge.py:40-49)"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "Humans see only the uncertain",
+      "items": [
+        "The queue is score where verdict = review and human_label is null (main.py:271-281)",
+        "Human labels override verdicts in reports and feed calibration (main.py:286-310)"
+      ]
+    }
+  ]
+}

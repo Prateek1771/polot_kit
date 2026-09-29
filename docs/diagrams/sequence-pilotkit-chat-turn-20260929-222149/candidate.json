@@ -1,0 +1,339 @@
+{
+  "schema_version": 1,
+  "diagram_type": "sequence",
+  "meta": {
+    "title": "PilotKit — one chat turn",
+    "output": "docs/diagrams/sequence-pilotkit-chat-turn-20260929-222149/pilotkit-chat-turn.html",
+    "viewBox": [
+      1080,
+      696
+    ],
+    "column_fit": "spread",
+    "animation": "trace",
+    "quality_profile": "showcase",
+    "locale": "en",
+    "repository": {
+      "url": "https://localhost/pilotkit/persistance_dev.git",
+      "link_mode": "local-only",
+      "revision": "8b8478ebde25c3d7d80b5aa3f7ad3da8fc3db202"
+    }
+  },
+  "participants": [
+    {
+      "id": "web",
+      "type": "frontend",
+      "label": "Chat page",
+      "sublabel": "user sends here",
+      "sources": [
+        {
+          "path": "web/app/chat/page.tsx",
+          "line": 77,
+          "end_line": 86,
+          "label": "send()"
+        },
+        {
+          "path": "web/lib/api.ts",
+          "line": 20,
+          "end_line": 38,
+          "label": "postStream"
+        }
+      ]
+    },
+    {
+      "id": "api",
+      "type": "backend",
+      "label": "FastAPI /chat",
+      "sublabel": "StreamingResponse",
+      "sources": [
+        {
+          "path": "api/app/main.py",
+          "line": 89,
+          "end_line": 109
+        }
+      ]
+    },
+    {
+      "id": "bot",
+      "type": "backend",
+      "label": "chat_turn()",
+      "sublabel": "LangGraph graph",
+      "sources": [
+        {
+          "path": "api/app/bot.py",
+          "line": 406,
+          "end_line": 441
+        },
+        {
+          "path": "api/app/bot.py",
+          "line": 62,
+          "end_line": 85,
+          "label": "route()"
+        }
+      ]
+    },
+    {
+      "id": "jev",
+      "type": "external",
+      "label": "Jev",
+      "sublabel": "Decisions API",
+      "sources": [
+        {
+          "path": "api/app/jev.py",
+          "line": 23,
+          "end_line": 38,
+          "label": "decide()"
+        }
+      ]
+    },
+    {
+      "id": "llm",
+      "type": "external",
+      "label": "gpt-4o-mini",
+      "sublabel": "via LiteLLM",
+      "sources": [
+        {
+          "path": "api/app/llm.py",
+          "line": 30,
+          "end_line": 54
+        }
+      ]
+    },
+    {
+      "id": "db",
+      "type": "database",
+      "label": "PostgreSQL",
+      "sublabel": "message · claim",
+      "sources": [
+        {
+          "path": "api/app/schema.sql",
+          "line": 13,
+          "end_line": 41
+        },
+        {
+          "path": "api/app/schema.sql",
+          "line": 53,
+          "end_line": 80
+        }
+      ]
+    }
+  ],
+  "segments": [
+    {
+      "from": 152,
+      "to": 196,
+      "label": "Request"
+    },
+    {
+      "from": 208,
+      "to": 252,
+      "label": "Jev routes"
+    },
+    {
+      "from": 264,
+      "to": 392,
+      "label": "One branch runs"
+    },
+    {
+      "from": 404,
+      "to": 560,
+      "label": "Stream the reply"
+    }
+  ],
+  "messages": [
+    {
+      "id": "post-chat",
+      "from": "web",
+      "to": "api",
+      "y": 162,
+      "label": "POST /chat (SSE)",
+      "variant": "emphasis",
+      "note": "API opens or creates the conversation row; 409 if it has ended"
+    },
+    {
+      "id": "run-turn",
+      "from": "api",
+      "to": "bot",
+      "y": 190,
+      "label": "chat_turn()",
+      "variant": "emphasis",
+      "note": "loads history + memory from PostgreSQL, then runs the graph"
+    },
+    {
+      "id": "router-questions",
+      "from": "bot",
+      "to": "jev",
+      "y": 218,
+      "label": "decide() · 5 questions",
+      "variant": "security",
+      "note": "intent, injection, needs_human, pii_overshare, confirms"
+    },
+    {
+      "id": "router-answers",
+      "from": "jev",
+      "to": "bot",
+      "y": 246,
+      "label": "typed probabilities",
+      "variant": "return",
+      "note": "route(): guards ≥ 0.7 win, then sticky flows, then intent → refuse · handoff · identify · my_policy · claim · shop · coverage · clarify"
+    },
+    {
+      "id": "extract-name",
+      "from": "bot",
+      "to": "llm",
+      "y": 274,
+      "label": "identify: extract name",
+      "variant": "dashed"
+    },
+    {
+      "id": "lookup-name",
+      "from": "bot",
+      "to": "db",
+      "y": 302,
+      "label": "identify: lookup holder_name",
+      "variant": "dashed",
+      "note": "match → policy cards + verified; no match → sorry; 2nd miss → handoff"
+    },
+    {
+      "id": "tool-gate",
+      "from": "bot",
+      "to": "jev",
+      "y": 330,
+      "label": "claim: tool gate noul",
+      "variant": "security",
+      "note": "after the LLM extracts policy_no, incident_date, description; passes only if fields match and the user confirmed"
+    },
+    {
+      "id": "insert-claim",
+      "from": "bot",
+      "to": "db",
+      "y": 358,
+      "label": "claim: insert if gate ≥ 0.7",
+      "variant": "dashed"
+    },
+    {
+      "id": "extract-needs",
+      "from": "bot",
+      "to": "llm",
+      "y": 386,
+      "label": "shop: extract needs",
+      "variant": "dashed",
+      "note": "pick_plans() filters and sorts in code"
+    },
+    {
+      "id": "save-user-msg",
+      "from": "bot",
+      "to": "db",
+      "y": 414,
+      "label": "insert user msg + Jev",
+      "variant": "default",
+      "note": "PII redacted when pii_overshare ≥ 0.7"
+    },
+    {
+      "id": "sse-meta",
+      "from": "api",
+      "to": "web",
+      "y": 442,
+      "label": "SSE meta",
+      "variant": "return",
+      "note": "yielded by chat_turn(): route, cards, verified customer"
+    },
+    {
+      "id": "stream-request",
+      "from": "bot",
+      "to": "llm",
+      "y": 470,
+      "label": "stream reply",
+      "variant": "emphasis",
+      "note": "rules + KB + CUSTOMER + THIS TURN; token deltas stream back with cost"
+    },
+    {
+      "id": "sse-tokens",
+      "from": "api",
+      "to": "web",
+      "y": 498,
+      "label": "SSE token*",
+      "variant": "return"
+    },
+    {
+      "id": "save-reply",
+      "from": "bot",
+      "to": "db",
+      "y": 526,
+      "label": "insert reply; update state",
+      "variant": "default"
+    },
+    {
+      "id": "sse-done",
+      "from": "api",
+      "to": "web",
+      "y": 554,
+      "label": "SSE done",
+      "variant": "return",
+      "note": "the page renders bubbles, cards and the Jev panel"
+    }
+  ],
+  "activations": [
+    {
+      "participant": "web",
+      "from": 158,
+      "to": 557,
+      "type": "frontend"
+    },
+    {
+      "participant": "api",
+      "from": 162,
+      "to": 557,
+      "type": "backend"
+    },
+    {
+      "participant": "bot",
+      "from": 190,
+      "to": 530,
+      "type": "backend"
+    },
+    {
+      "participant": "jev",
+      "from": 214,
+      "to": 250,
+      "type": "external"
+    },
+    {
+      "participant": "jev",
+      "from": 326,
+      "to": 336,
+      "type": "external"
+    },
+    {
+      "participant": "llm",
+      "from": 466,
+      "to": 478,
+      "type": "external"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "violet",
+      "title": "Jev decides",
+      "items": [
+        "One router call carries five questions per turn (bot.py:161-172)",
+        "The tool gate is a second Jev noul before any claim insert (bot.py:250-270)"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "The LLM talks",
+      "items": [
+        "gpt-4o-mini only extracts fields and writes the reply (bot.py:146-153, 426)",
+        "The catalog is added to the prompt only on shop and coverage turns (bot.py:386-394)"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Safety",
+      "items": [
+        "Injection or needs_human ≥ 0.7 short-circuit every branch (bot.py:62-67)",
+        "Policy data only after a full-name match; numbers stay masked (bot.py:174-206)"
+      ]
+    }
+  ]
+}

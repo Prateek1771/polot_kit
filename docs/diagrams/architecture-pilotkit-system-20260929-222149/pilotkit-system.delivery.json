@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "f0dfd8fe-5cee-48ee-96fe-1c48657348b2",
+  "status": "current",
+  "command": "deliver",
+  "type": "architecture",
+  "input": "D:\\personal\\persistance_dev\\docs\\diagrams\\architecture-pilotkit-system-20260929-222149\\candidate.json",
+  "output": "D:\\personal\\persistance_dev\\docs\\diagrams\\architecture-pilotkit-system-20260929-222149\\pilotkit-system.html",
+  "specification": {
+    "sha256": "fb20653d22daaffac9c63d5033a7d6cce0413b40a87242faef266fab01160de0",
+    "bytes": 8837
+  },
+  "artifact": {
+    "sha256": "044d6ff127421614b0b9f1249e8a19f02bd0c788e23a250d2899d8d41e0065e3",
+    "bytes": 771649
+  }
+}

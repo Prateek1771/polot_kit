@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "edbc49e0-617c-473a-afd1-bc6cad150c6c",
+  "status": "current",
+  "command": "deliver",
+  "type": "lifecycle",
+  "input": "D:\\personal\\persistance_dev\\docs\\diagrams\\lifecycle-pilotkit-conversation-20260929-222149\\candidate.json",
+  "output": "D:\\personal\\persistance_dev\\docs\\diagrams\\lifecycle-pilotkit-conversation-20260929-222149\\pilotkit-conversation.html",
+  "specification": {
+    "sha256": "e0a2d1261ba5d8d3a9912f878f18f71bbcf12465ac53344f79e91b37b6d3d248",
+    "bytes": 7078
+  },
+  "artifact": {
+    "sha256": "e85dd4bde123bd6613ddc5d639c642f08ca264d8e2997cea8e8b05948f617441",
+    "bytes": 768702
+  }
+}

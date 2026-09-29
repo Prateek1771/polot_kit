@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "ok": true,
+  "command": "finalize",
+  "status": "pass",
+  "type": "architecture",
+  "quality": "showcase",
+  "specification": {
+    "path": "D:\\personal\\persistance_dev\\docs\\diagrams\\architecture-pilotkit-system-20260929-222149\\candidate.json",
+    "sha256": "a8df468ff9bc92fc0d191bd6acc0de852bf33a3e73c6740f2ee8f9306a81abfa",
+    "bytes": 8838
+  },
+  "artifact": {
+    "path": "D:\\personal\\persistance_dev\\docs\\diagrams\\architecture-pilotkit-system-20260929-222149\\pilotkit-system.html",
+    "sha256": "121a2e35ff386e21296ac15f2c6135bf2f9be0efa6b894be8a31211293bedffd",
+    "bytes": 771647
+  },
+  "gates": {
+    "validate": "pass",
+    "deliver": "pass",
+    "check": "pass",
+    "browser-check": "pass"
+  },
+  "diagnostics": [],
+  "diagnosticSummary": {
+    "total": 0,
+    "shown": 0,
+    "truncated": false
+  },
+  "evidence": {
+    "receipt": "D:\\personal\\persistance_dev\\docs\\diagrams\\architecture-pilotkit-system-20260929-222149\\review-2\\pilotkit-system.finalize.json",
+    "summaryReceipt": "D:\\personal\\persistance_dev\\docs\\diagrams\\architecture-pilotkit-system-20260929-222149\\review-2\\pilotkit-system.finalize-summary.json",
+    "browserCheckReceipt": "D:\\personal\\persistance_dev\\docs\\diagrams\\architecture-pilotkit-system-20260929-222149\\review-2\\pilotkit-system.browser-check.json"
+  },
+  "update": {
+    "status": "current",
+    "installedVersion": "3.0.1",
+    "availableVersion": "3.0.1",
+    "releaseNotes": null,
+    "checkedAt": "2026-09-29T16:52:16.168Z",
+    "source": "cache",
+    "noticeRequired": false,
+    "noticeText": null
+  },
+  "visualReview": "not-requested",
+  "durationMs": 3934
+}

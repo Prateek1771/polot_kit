@@ -9,7 +9,7 @@
 
 Every decision the code branches on is a typed, calibrated answer from **TypeSafe Jev** (`typesafe/jev-1.13`, via the OpenRouter Decisions API). That covers intent, prompt-injection, handoff, PII, the pre-submit tool gate, the simulated user's next move and the grading rubric. **gpt-4o-mini** writes the words.
 
-Design, diagrams and trade-offs: [`PILOTKIT.md`](PILOTKIT.md).
+Design, diagrams and trade-offs: [`PILOTKIT.md`](PILOTKIT.md). Interactive architecture, sequence, workflow and lifecycle diagrams, with animated WebM recordings, are in [`docs/`](docs/README.md).
 
 ## Quickstart
 ```bash

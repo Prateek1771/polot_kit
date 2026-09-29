@@ -1,0 +1,420 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "PilotKit — system architecture",
+    "output": "docs/diagrams/architecture-pilotkit-system-20260929-222149/pilotkit-system.html",
+    "quality_profile": "showcase",
+    "animation": "trace",
+    "locale": "en",
+    "repository": {
+      "url": "https://localhost/pilotkit/persistance_dev.git",
+      "link_mode": "local-only",
+      "revision": "8b8478ebde25c3d7d80b5aa3f7ad3da8fc3db202"
+    }
+  },
+  "components": [
+    {
+      "id": "browser",
+      "type": "external",
+      "label": "Browser",
+      "sublabel": "landing · /chat · /lab",
+      "pos": [
+        40,
+        230
+      ],
+      "size": [
+        130,
+        64
+      ],
+      "sources": [
+        {
+          "path": "web/components/nav.tsx",
+          "line": 12,
+          "end_line": 17,
+          "label": "routes"
+        }
+      ]
+    },
+    {
+      "id": "web",
+      "type": "frontend",
+      "label": "Next.js 16 web",
+      "sublabel": "client pages :3100",
+      "pos": [
+        260,
+        230
+      ],
+      "size": [
+        150,
+        64
+      ],
+      "sources": [
+        {
+          "path": "docker-compose.yml",
+          "line": 31,
+          "end_line": 36
+        },
+        {
+          "path": "web/lib/api.ts",
+          "line": 1,
+          "end_line": 38,
+          "label": "fetch + SSE reader"
+        }
+      ]
+    },
+    {
+      "id": "api",
+      "type": "backend",
+      "label": "FastAPI",
+      "sublabel": "routes + SSE :8000",
+      "pos": [
+        540,
+        230
+      ],
+      "size": [
+        150,
+        64
+      ],
+      "sources": [
+        {
+          "path": "docker-compose.yml",
+          "line": 17,
+          "end_line": 23
+        },
+        {
+          "path": "api/app/main.py",
+          "line": 89,
+          "end_line": 117,
+          "label": "/chat, /end"
+        }
+      ]
+    },
+    {
+      "id": "bot",
+      "type": "backend",
+      "label": "LangGraph bot",
+      "sublabel": "chat_turn() one path",
+      "pos": [
+        790,
+        230
+      ],
+      "size": [
+        200,
+        64
+      ],
+      "sources": [
+        {
+          "path": "api/app/bot.py",
+          "line": 406,
+          "end_line": 441,
+          "label": "chat_turn"
+        },
+        {
+          "path": "api/app/bot.py",
+          "line": 359,
+          "end_line": 373,
+          "label": "graph"
+        }
+      ]
+    },
+    {
+      "id": "jev",
+      "type": "external",
+      "label": "Jev Decisions API",
+      "sublabel": "OpenRouter alpha",
+      "pos": [
+        1154,
+        230
+      ],
+      "size": [
+        170,
+        64
+      ],
+      "tag": "typed + calibrated",
+      "sources": [
+        {
+          "path": "api/app/jev.py",
+          "line": 15,
+          "end_line": 38,
+          "label": "decide()"
+        }
+      ]
+    },
+    {
+      "id": "litellm",
+      "type": "backend",
+      "label": "LiteLLM client",
+      "sublabel": "app/llm.py",
+      "pos": [
+        815,
+        60
+      ],
+      "size": [
+        150,
+        64
+      ],
+      "sources": [
+        {
+          "path": "api/app/llm.py",
+          "line": 19,
+          "end_line": 54,
+          "label": "complete / stream"
+        }
+      ]
+    },
+    {
+      "id": "openai",
+      "type": "external",
+      "label": "OpenAI",
+      "sublabel": "gpt-4o-mini",
+      "pos": [
+        1200,
+        60
+      ],
+      "size": [
+        150,
+        64
+      ],
+      "sources": [
+        {
+          "path": "api/app/llm.py",
+          "line": 6,
+          "label": "LLM_MODEL"
+        }
+      ]
+    },
+    {
+      "id": "langfuse",
+      "type": "external",
+      "label": "Langfuse",
+      "sublabel": "self-hosted host :3000",
+      "pos": [
+        40,
+        60
+      ],
+      "size": [
+        150,
+        64
+      ],
+      "sources": [
+        {
+          "path": "api/app/llm.py",
+          "line": 8,
+          "end_line": 12,
+          "label": "langfuse_otel"
+        },
+        {
+          "path": "docker-compose.yml",
+          "line": 5
+        }
+      ]
+    },
+    {
+      "id": "redis",
+      "type": "messagebus",
+      "label": "Redis",
+      "sublabel": "arq queue",
+      "pos": [
+        470,
+        580
+      ],
+      "size": [
+        130,
+        64
+      ],
+      "sources": [
+        {
+          "path": "docker-compose.yml",
+          "line": 14,
+          "end_line": 16
+        },
+        {
+          "path": "api/app/worker.py",
+          "line": 9
+        }
+      ]
+    },
+    {
+      "id": "worker",
+      "type": "backend",
+      "label": "arq worker",
+      "sublabel": "simulator + judge",
+      "pos": [
+        900,
+        580
+      ],
+      "size": [
+        150,
+        64
+      ],
+      "sources": [
+        {
+          "path": "api/app/worker.py",
+          "line": 12,
+          "end_line": 33
+        },
+        {
+          "path": "docker-compose.yml",
+          "line": 24,
+          "end_line": 30
+        }
+      ]
+    },
+    {
+      "id": "postgres",
+      "type": "database",
+      "label": "PostgreSQL 17",
+      "sublabel": "policy · claim · conversation · message · score · run",
+      "pos": [
+        600,
+        410
+      ],
+      "size": [
+        330,
+        64
+      ],
+      "sources": [
+        {
+          "path": "api/app/schema.sql",
+          "line": 1,
+          "end_line": 80
+        },
+        {
+          "path": "docker-compose.yml",
+          "line": 8,
+          "end_line": 13
+        }
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "docker compose stack",
+      "wraps": [
+        "web",
+        "api",
+        "bot",
+        "litellm",
+        "redis",
+        "worker",
+        "postgres"
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "browse",
+      "from": "browser",
+      "to": "web",
+      "label": "HTTP :3100",
+      "variant": "emphasis"
+    },
+    {
+      "id": "rest-sse",
+      "from": "web",
+      "to": "api",
+      "label": "REST + SSE :8000",
+      "variant": "emphasis"
+    },
+    {
+      "id": "turn",
+      "from": "api",
+      "to": "bot",
+      "label": "chat_turn()",
+      "variant": "emphasis"
+    },
+    {
+      "id": "decide",
+      "from": "bot",
+      "to": "jev",
+      "label": "decide() router + gate",
+      "variant": "emphasis"
+    },
+    {
+      "id": "reply",
+      "from": "bot",
+      "to": "litellm",
+      "label": "stream reply"
+    },
+    {
+      "id": "generate",
+      "from": "litellm",
+      "to": "openai",
+      "label": "gpt-4o-mini"
+    },
+    {
+      "id": "trace",
+      "from": "litellm",
+      "to": "langfuse",
+      "label": "OTEL traces",
+      "variant": "dashed"
+    },
+    {
+      "id": "enqueue",
+      "from": "api",
+      "to": "redis",
+      "label": "enqueue jobs",
+      "variant": "dashed"
+    },
+    {
+      "id": "consume",
+      "from": "redis",
+      "to": "worker",
+      "label": "arq"
+    },
+    {
+      "id": "sim-turn",
+      "from": "worker",
+      "to": "bot",
+      "label": "chat_turn() sim"
+    },
+    {
+      "id": "bot-writes",
+      "from": "bot",
+      "to": "postgres",
+      "label": "messages, claims"
+    },
+    {
+      "id": "api-writes",
+      "from": "api",
+      "to": "postgres",
+      "label": "runs, reviews"
+    },
+    {
+      "id": "worker-writes",
+      "from": "worker",
+      "to": "postgres",
+      "label": "scores"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "violet",
+      "title": "Jev decides, the LLM talks",
+      "items": [
+        "One Jev call per turn answers intent, injection, needs-human, PII, confirms (bot.py:161-172)",
+        "A Jev noul tool gate guards the claim insert (bot.py:250-270)",
+        "gpt-4o-mini writes replies and extracts fields; plans are picked in code (bot.py:96-106)"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "Test Lab in the worker",
+      "items": [
+        "run_suite_job runs 5 simulated chats at once through the same chat_turn() (sim.py:65-80)",
+        "Simulated users call Jev next_move and LiteLLM for their messages (sim.py:17-60)",
+        "judge_job grades with a Jev rubric and writes scores (judge.py:18-63)"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "Knowledge, loaded at import",
+      "items": [
+        "policy.md broker terms + catalog.yaml (40 plans) form the prompt KB (bot.py:21-46)",
+        "customers.yaml is upserted into policy at API startup (main.py:25-44)"
+      ]
+    }
+  ]
+}

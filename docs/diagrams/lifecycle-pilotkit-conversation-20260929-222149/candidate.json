@@ -1,0 +1,298 @@
+{
+  "schema_version": 2,
+  "diagram_type": "lifecycle",
+  "meta": {
+    "title": "PilotKit — conversation lifecycle",
+    "output": "docs/diagrams/lifecycle-pilotkit-conversation-20260929-222149/pilotkit-conversation.html",
+    "animation": "trace",
+    "quality_profile": "showcase",
+    "locale": "en",
+    "repository": {
+      "url": "https://localhost/pilotkit/persistance_dev.git",
+      "link_mode": "local-only",
+      "revision": "8b8478ebde25c3d7d80b5aa3f7ad3da8fc3db202"
+    }
+  },
+  "lanes": [
+    {
+      "id": "main",
+      "label": "conversation.status"
+    },
+    {
+      "id": "identity",
+      "label": "Identity (memory)"
+    },
+    {
+      "id": "claim",
+      "label": "Claim flow (memory)"
+    },
+    {
+      "id": "terminal",
+      "label": "Terminal"
+    }
+  ],
+  "states": [
+    {
+      "id": "open",
+      "type": "start",
+      "label": "open",
+      "sublabel": "live or simulated chat",
+      "lane": "main",
+      "col": 0,
+      "step": "01",
+      "tag": "chatting",
+      "sources": [
+        {
+          "path": "api/app/schema.sql",
+          "line": 19
+        },
+        {
+          "path": "api/app/main.py",
+          "line": 98,
+          "end_line": 100
+        }
+      ]
+    },
+    {
+      "id": "judging",
+      "type": "active",
+      "label": "judging",
+      "sublabel": "Jev rubric running",
+      "lane": "main",
+      "col": 3,
+      "step": "02",
+      "tag": "worker",
+      "sources": [
+        {
+          "path": "api/app/main.py",
+          "line": 112,
+          "end_line": 117
+        },
+        {
+          "path": "api/app/judge.py",
+          "line": 23
+        }
+      ]
+    },
+    {
+      "id": "judged",
+      "type": "success",
+      "label": "judged",
+      "sublabel": "scores + outcome",
+      "lane": "main",
+      "col": 4,
+      "step": "03",
+      "tag": "done",
+      "sources": [
+        {
+          "path": "api/app/judge.py",
+          "line": 60,
+          "end_line": 63
+        }
+      ]
+    },
+    {
+      "id": "awaiting_name",
+      "type": "waiting",
+      "label": "awaiting name",
+      "sublabel": "2nd miss → handoff",
+      "lane": "identity",
+      "col": 1,
+      "tag": "no data shared",
+      "sources": [
+        {
+          "path": "api/app/bot.py",
+          "line": 174,
+          "end_line": 197
+        }
+      ]
+    },
+    {
+      "id": "verified",
+      "type": "success",
+      "label": "verified",
+      "sublabel": "policies in context",
+      "lane": "identity",
+      "col": 2,
+      "tag": "customer",
+      "sources": [
+        {
+          "path": "api/app/bot.py",
+          "line": 198,
+          "end_line": 206
+        }
+      ]
+    },
+    {
+      "id": "collecting",
+      "type": "active",
+      "label": "collecting fields",
+      "sublabel": "policy · date · what",
+      "lane": "claim",
+      "col": 1,
+      "sources": [
+        {
+          "path": "api/app/bot.py",
+          "line": 216,
+          "end_line": 237
+        }
+      ]
+    },
+    {
+      "id": "awaiting_confirm",
+      "type": "decision",
+      "label": "awaiting confirm",
+      "sublabel": "confirm card shown",
+      "lane": "claim",
+      "col": 2,
+      "tag": "Jev confirms",
+      "sources": [
+        {
+          "path": "api/app/bot.py",
+          "line": 238,
+          "end_line": 248
+        },
+        {
+          "path": "api/app/bot.py",
+          "line": 72,
+          "end_line": 73
+        }
+      ]
+    },
+    {
+      "id": "claim_filed",
+      "type": "success",
+      "label": "claim filed",
+      "sublabel": "CLM-XXXXXX issued",
+      "lane": "claim",
+      "col": 3,
+      "tag": "gate ≥ 0.7",
+      "sources": [
+        {
+          "path": "api/app/bot.py",
+          "line": 250,
+          "end_line": 270
+        }
+      ]
+    },
+    {
+      "id": "errored",
+      "type": "failure",
+      "label": "error",
+      "sublabel": "sim exception, not graded",
+      "lane": "terminal",
+      "col": 0,
+      "tag": "terminal",
+      "sources": [
+        {
+          "path": "api/app/sim.py",
+          "line": 31,
+          "end_line": 38
+        }
+      ]
+    }
+  ],
+  "transitions": [
+    {
+      "id": "end-chat",
+      "from": "open",
+      "to": "judging",
+      "label": "chat ended",
+      "variant": "emphasis",
+      "note": "user presses End & grade, or the simulator stops (goal met, gave up, 8 turns)"
+    },
+    {
+      "id": "scored",
+      "from": "judging",
+      "to": "judged",
+      "label": "rubric scored",
+      "variant": "emphasis"
+    },
+    {
+      "id": "ask-name",
+      "from": "open",
+      "to": "awaiting_name",
+      "label": "own policy?",
+      "note": "Jev intent my_policy with no verified customer"
+    },
+    {
+      "id": "name-match",
+      "from": "awaiting_name",
+      "to": "verified",
+      "label": "name matches",
+      "variant": "security",
+      "note": "lower(holder_name) lookup in policy",
+      "labelDy": -42
+    },
+    {
+      "id": "back-to-chat",
+      "from": "verified",
+      "to": "open",
+      "label": "keeps chatting",
+      "variant": "dashed"
+    },
+    {
+      "id": "start-claim",
+      "from": "open",
+      "to": "collecting",
+      "label": "file a claim",
+      "note": "Jev intent new_claim"
+    },
+    {
+      "id": "fields-complete",
+      "from": "collecting",
+      "to": "awaiting_confirm",
+      "label": "all 3 fields"
+    },
+    {
+      "id": "user-corrects",
+      "from": "awaiting_confirm",
+      "to": "collecting",
+      "label": "corrects",
+      "variant": "dashed",
+      "note": "changed fields are read back again"
+    },
+    {
+      "id": "gate-passes",
+      "from": "awaiting_confirm",
+      "to": "claim_filed",
+      "label": "confirmed + gate",
+      "variant": "security",
+      "note": "Jev confirms ≥ 0.7, then tool gate noul ≥ 0.7",
+      "labelDy": -42
+    },
+    {
+      "id": "sim-crash",
+      "from": "open",
+      "to": "errored",
+      "label": "exception",
+      "variant": "security"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Status is a column",
+      "items": [
+        "conversation.status is open, judging or judged (schema.sql:19); the simulator adds error (sim.py:37)",
+        "Only an open conversation accepts new turns; /chat returns 409 otherwise (main.py:95-96)"
+      ]
+    },
+    {
+      "dot": "violet",
+      "title": "Memory drives the flows",
+      "items": [
+        "Identity and claim progress live in conversation.state JSON, updated every turn (bot.py:437-440)",
+        "route() keeps these flows sticky until they finish (bot.py:62-85)"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Gates",
+      "items": [
+        "No policy data before a full-name match (bot.py:174-206)",
+        "No claim row without user confirmation and a passing Jev tool gate (bot.py:250-270)"
+      ]
+    }
+  ]
+}
