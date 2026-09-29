@@ -1,0 +1,498 @@
+# ponytail: hand-compiled snapshot of policybazaar.com (2026-09-29); re-scrape to refresh.
+as_of: "2026-09-29"
+source: "Compiled from public listings on policybazaar.com; figures are indicative starting prices, verify before buying."
+glossary:
+  IDV: "Insured Declared Value: the vehicle's current market value and the most paid on theft or total loss; about 5% below ex-showroom when new, falls with age."
+  NCB: "No Claim Bonus: own-damage premium discount for each claim-free year, up to 50%; stays with the owner when switching insurer."
+  zero_dep: "Zero depreciation: motor add-on that pays for replaced parts without deducting depreciation; plans often cap zero-dep claims per year."
+  co_pay: "Co-payment: fixed share of each claim (e.g. 10-20%) paid by the policyholder; the insurer pays the rest."
+  waiting_period: "Time before certain claims are paid: usually 30 days for illness (accidents from day 1), ~2 years for specific diseases, 3 years for pre-existing diseases."
+  CSR: "Claim settlement ratio: percent of claims received in a year that the insurer settled; above 95% is considered good for term plans."
+  third_party: "Mandatory motor cover for injury, death or property damage caused to others (property capped at ₹7.5L); does not cover your own vehicle."
+  sum_insured: "Most the insurer pays in a policy year (health/travel), or the life cover paid to the nominee (term: sum assured)."
+plans:
+  # car
+  - id: hdfc-ergo-car
+    category: car
+    insurer: HDFC ERGO
+    plan: Comprehensive Car Insurance
+    premium_from_inr: 2094
+    premium_note: "per year; PB third-party start price, car ≤1000cc"
+    cover: "Own damage up to IDV + third-party; PA ₹15L"
+    claim_settlement_ratio: 99.0
+    network: "8,200+ cashless garages"
+    highlights: ["Unlimited zero-dep claims", "Overnight vehicle repairs service", "NCB, voluntary-deductible and anti-theft discounts"]
+    exclusions: ["Normal wear and tear/depreciation", "Driving without licence or under the influence", "Consequential losses"]
+    source_url: "https://www.policybazaar.com/insurance-companies/hdfc-ergo-car-insurance/"
+  - id: icici-lombard-car
+    category: car
+    insurer: ICICI Lombard
+    plan: Comprehensive Car Insurance
+    premium_from_inr: 2094
+    premium_note: "per year; PB third-party start price, car ≤1000cc"
+    cover: "Own damage up to IDV + third-party; PA ₹15L"
+    claim_settlement_ratio: 96.75
+    network: "5,900+ cashless garages"
+    highlights: ["24x7 roadside assistance", "2 zero-dep claims", "Claims via website, app or call centre"]
+    exclusions: ["Accident damage when driver has no valid licence", "Tyre damage (standard policy)"]
+    source_url: "https://www.policybazaar.com/insurance-companies/icici-lombard-car-insurance/"
+  - id: bajaj-car
+    category: car
+    insurer: Bajaj General (formerly Bajaj Allianz)
+    plan: Comprehensive Car Insurance
+    premium_from_inr: 2094
+    premium_note: "per year; PB third-party start price, car ≤1000cc"
+    cover: "Own damage up to IDV + third-party; PA ₹15L"
+    claim_settlement_ratio: 98.5
+    network: "4,000+ cashless garages"
+    highlights: ["Free pick-up and drop", "Drive Smart vehicle tracking", "NCB transfer from previous insurer"]
+    exclusions: ["Consequential losses", "Wear and tear/depreciation", "Drunk driving; mechanical/electrical breakdown"]
+    source_url: "https://www.policybazaar.com/insurance-companies/bajaj-allianz-car-insurance/"
+  - id: tata-aig-car
+    category: car
+    insurer: Tata AIG
+    plan: Comprehensive Car Insurance
+    premium_from_inr: 2094
+    premium_note: "per year; PB third-party start price, car ≤1000cc"
+    cover: "Own damage up to IDV + third-party; PA ₹15L"
+    claim_settlement_ratio: null
+    network: "7,500+ cashless garages"
+    highlights: ["24x7 roadside assistance", "2 zero-dep claims", "650 claim experts across India"]
+    exclusions: ["Drunk driving or invalid licence", "Consequential loss", "Damage outside the policy's geographic area"]
+    source_url: "https://www.policybazaar.com/insurance-companies/tata-aig-car-insurance/"
+  - id: digit-car
+    category: car
+    insurer: Go Digit
+    plan: Comprehensive Car Insurance
+    premium_from_inr: 2094
+    premium_note: "per year; PB third-party start price, car ≤1000cc"
+    cover: "Own damage up to IDV + third-party; PA ₹15L"
+    claim_settlement_ratio: 96.0
+    network: "Repair anywhere; 5,000+ network garages"
+    highlights: ["Car pick-up, drop and repair", "Unlimited comprehensive claims; 1–2 zero-dep claims", "Quick online renewal"]
+    exclusions: ["Driving without a valid licence", "Drunk driving", "Tyre damage (standard policy)"]
+    source_url: "https://www.policybazaar.com/insurance-companies/digit-car-insurance/"
+  - id: sbi-general-car
+    category: car
+    insurer: SBI General
+    plan: Comprehensive Car Insurance
+    premium_from_inr: 2094
+    premium_note: "per year; PB third-party start price, car ≤1000cc"
+    cover: "Own damage up to IDV + third-party; PA ₹15L"
+    claim_settlement_ratio: null
+    network: "16,000+ cashless garages"
+    highlights: ["Largest garage network on PB", "Unlimited zero-dep claims", "NCB for every claim-free year"]
+    exclusions: ["Wear and tear or breakdown", "Private car used commercially", "Invalid driving licence"]
+    source_url: "https://www.policybazaar.com/insurance-companies/sbi-general-car-insurance/"
+  - id: royal-sundaram-car
+    category: car
+    insurer: Royal Sundaram
+    plan: Comprehensive Car Insurance
+    premium_from_inr: 2094
+    premium_note: "per year; PB third-party start price, car ≤1000cc"
+    cover: "Own damage up to IDV + third-party; PA ₹15L"
+    claim_settlement_ratio: 98.6
+    network: "3,300+ cashless garages"
+    highlights: ["Unlimited zero-dep claims", "20-minute vehicle inspection via M-Inspect app", "24x7 roadside assistance"]
+    exclusions: ["Mechanical/electrical breakdown", "Driving without a valid licence", "Drunk driving"]
+    source_url: "https://www.policybazaar.com/insurance-companies/royal-sundaram-car-insurance/"
+  - id: indusind-general-car
+    category: car
+    insurer: IndusInd General (formerly Reliance General)
+    plan: Comprehensive Car Insurance
+    premium_from_inr: 2094
+    premium_note: "per year; PB third-party start price, car ≤1000cc"
+    cover: "Own damage up to IDV + third-party; PA ₹15L"
+    claim_settlement_ratio: 98.0
+    network: "8,200+ cashless garages"
+    highlights: ["Unlimited zero-dep and comprehensive claims", "24x7 roadside assistance and free towing", "Selfi app to find cashless garages"]
+    exclusions: []
+    source_url: "https://www.policybazaar.com/insurance-companies/reliance-general-car-insurance/"
+  # bike
+  - id: hdfc-ergo-bike
+    category: bike
+    insurer: HDFC ERGO
+    plan: Comprehensive Two-Wheeler Insurance
+    premium_from_inr: 457
+    premium_note: "per year; PB third-party start price, e-2W ≤3kW"
+    cover: "Own damage up to IDV + third-party; PA ₹15L"
+    claim_settlement_ratio: null
+    network: "2,000+ cashless garages"
+    highlights: ["Paperless buying", "ICRA 'iAAA' claims-paying rating", "24x7 support by phone and email"]
+    exclusions: ["Depreciation/wear and tear", "Electrical or mechanical breakdown", "Riding without DL/RC/insurance"]
+    source_url: "https://www.policybazaar.com/insurance-companies/hdfc-ergo-two-wheeler-insurance/"
+  - id: bajaj-bike
+    category: bike
+    insurer: Bajaj General (formerly Bajaj Allianz)
+    plan: Comprehensive Two-Wheeler Insurance
+    premium_from_inr: 457
+    premium_note: "per year; PB third-party start price, e-2W ≤3kW"
+    cover: "Own damage up to IDV + third-party; PA ₹15L"
+    claim_settlement_ratio: null
+    network: "4,500+ cashless garages"
+    highlights: ["NCB up to 50%", "Range of add-on covers", "24x7 customer support"]
+    exclusions: []
+    source_url: "https://www.policybazaar.com/insurance-companies/bajaj-allianz-two-wheeler-insurance/"
+  - id: tata-aig-bike
+    category: bike
+    insurer: Tata AIG
+    plan: Comprehensive Bike Insurance
+    premium_from_inr: 457
+    premium_note: "per year; PB third-party start price, e-2W ≤3kW"
+    cover: "Own damage up to IDV + third-party; PA ₹15L"
+    claim_settlement_ratio: null
+    network: "7,500+ cashless garages"
+    highlights: ["Zero-documentation online renewal", "NCB for claim-free years", "24x7 support"]
+    exclusions: ["Wear and tear or depreciation", "Mechanical/technical breakdown", "Riding under the influence"]
+    source_url: "https://www.policybazaar.com/insurance-companies/tata-aig-two-wheeler-insurance/"
+  - id: digit-bike
+    category: bike
+    insurer: Go Digit
+    plan: Comprehensive Two-Wheeler Insurance
+    premium_from_inr: 457
+    premium_note: "per year; PB third-party start price, e-2W ≤3kW"
+    cover: "Own damage up to IDV + third-party; PA ₹15L"
+    claim_settlement_ratio: null
+    network: "4,400+ cashless garages"
+    highlights: ["Paperless claims", "NCB up to 50%", "Add-on covers to customise"]
+    exclusions: ["Wilful damage or negligence", "Loss outside the policy's geographic area", "Drunk riding or no licence"]
+    source_url: "https://www.policybazaar.com/insurance-companies/digit-two-wheeler-insurance/"
+  - id: iffco-tokio-bike
+    category: bike
+    insurer: IFFCO Tokio
+    plan: Comprehensive Two-Wheeler Insurance
+    premium_from_inr: 457
+    premium_note: "per year; PB third-party start price, e-2W ≤3kW"
+    cover: "Own damage up to IDV + third-party; PA ₹15L"
+    claim_settlement_ratio: null
+    network: "4,300+ cashless garages"
+    highlights: ["Fast claims with minimal paperwork", "NCB up to 50% on renewal", "24x7 claim support"]
+    exclusions: ["Mechanical or electrical failure", "No valid DL/RC/policy", "Use beyond intended purpose"]
+    source_url: "https://www.policybazaar.com/insurance-companies/iffco-tokio-two-wheeler-insurance/"
+  - id: sbi-general-bike
+    category: bike
+    insurer: SBI General
+    plan: Two-Wheeler Package Policy
+    premium_from_inr: 457
+    premium_note: "per year; PB third-party start price, e-2W ≤3kW"
+    cover: "Own damage up to IDV + third-party; PA ₹15L"
+    claim_settlement_ratio: null
+    network: "7,100+ cashless garages"
+    highlights: ["Third-party + own damage in one policy", "Affordable add-ons", "24x7 assistance"]
+    exclusions: ["Wear, tear or ageing", "Consequential loss", "Mechanical/electrical breakdown"]
+    source_url: "https://www.policybazaar.com/insurance-companies/sbi-general-two-wheeler-insurance/"
+  - id: indusind-general-bike
+    category: bike
+    insurer: IndusInd General (formerly Reliance General)
+    plan: Comprehensive Two-Wheeler Insurance
+    premium_from_inr: 457
+    premium_note: "per year; PB third-party start price, e-2W ≤3kW"
+    cover: "Own damage up to IDV + third-party; PA ₹15L"
+    claim_settlement_ratio: null
+    network: "10,000+ cashless garages"
+    highlights: ["No-inspection renewal on select plans", "Multiple add-ons", "NCB each claim-free year"]
+    exclusions: ["Normal wear and tear", "Electrical or mechanical breakdown", "Use against the policy's limitations"]
+    source_url: "https://www.policybazaar.com/insurance-companies/reliance-general-two-wheeler-insurance/"
+  - id: liberty-bike
+    category: bike
+    insurer: Liberty General
+    plan: Two-Wheeler Annual Policy
+    premium_from_inr: 457
+    premium_note: "per year; PB third-party start price, e-2W ≤3kW"
+    cover: "Own damage up to IDV + third-party; PA ₹15L"
+    claim_settlement_ratio: null
+    network: "4,300+ cashless garages"
+    highlights: ["Roadside assistance", "Zero-paperwork online issuance", "NCB on own-damage renewal premium"]
+    exclusions: ["Loss outside the policy's geographic area", "Contractual liabilities", "Use outside the policy's limitations"]
+    source_url: "https://www.policybazaar.com/insurance-companies/liberty-two-wheeler-insurance/"
+  # health: CSR is insurer-level FY2025-26 from PB's table
+  - id: star-health-super-star
+    category: health
+    insurer: Star Health
+    plan: Super Star
+    premium_from_inr: null
+    premium_note: null
+    cover: "Sum insured ₹5L to unlimited"
+    claim_settlement_ratio: 91.0
+    network: "15,547 cashless hospitals"
+    highlights: ["One-time unlimited claim and unlimited bonus", "Lock entry age till 50", "Any room category; no co-pay"]
+    exclusions: ["PED waiting 3 years", "Specific illnesses waiting 24 months"]
+    source_url: "https://www.policybazaar.com/insurance-companies/star-health-insurance/super-star/"
+  - id: care-ultimate-care
+    category: health
+    insurer: Care Health
+    plan: Ultimate Care
+    premium_from_inr: null
+    premium_note: null
+    cover: "Sum insured ₹5L–₹1Cr"
+    claim_settlement_ratio: 97.0
+    network: "12,053 cashless hospitals"
+    highlights: ["Any room; no co-pay", "SI grows 50% a year regardless of claims", "Unlimited restoration of SI"]
+    exclusions: ["Daily cash allowance not covered", "Worldwide cover and maternity not covered", "PED waiting 3 years"]
+    source_url: "https://www.policybazaar.com/insurance-companies/religare-health-insurance/ultimate-care/"
+  - id: niva-bupa-reassure-3
+    category: health
+    insurer: Niva Bupa
+    plan: ReAssure 3.0
+    premium_from_inr: null
+    premium_note: null
+    cover: "Sum insured ₹5L to no limit"
+    claim_settlement_ratio: 94.4
+    network: "11,194 cashless hospitals"
+    highlights: ["Unused SI carries forward up to 10x", "Unlimited restoration; no co-pay", "Up to 30% live-healthy discount"]
+    exclusions: ["Twin-sharing room limit", "Maternity not covered", "Road ambulance capped at ₹2,000"]
+    source_url: "https://www.policybazaar.com/insurance-companies/max-bupa-health-insurance/reassure-3-0-plan/"
+  - id: hdfc-ergo-optima-select
+    category: health
+    insurer: HDFC ERGO
+    plan: Optima Select
+    premium_from_inr: null
+    premium_note: null
+    cover: "Sum insured ₹5L–₹25L"
+    claim_settlement_ratio: 94.2
+    network: "15,451 cashless hospitals"
+    highlights: ["Guaranteed 2x cover after 4 renewals", "Unlimited restoration", "No co-pay; preventive check-up from day 1"]
+    exclusions: ["Single private AC room limit", "No worldwide cover", "PED waiting 3 years"]
+    source_url: "https://www.policybazaar.com/insurance-companies/hdfc-ergo-health-insurance/optima-select/"
+  - id: icici-lombard-elevate
+    category: health
+    insurer: ICICI Lombard
+    plan: Elevate
+    premium_from_inr: null
+    premium_note: null
+    cover: "Sum insured ₹5L to unlimited"
+    claim_settlement_ratio: 92.0
+    network: "13,913 cashless hospitals"
+    highlights: ["OPD rider with no sub-limits", "SI grows 20% a year regardless of claims", "No co-pay; unlimited restoration"]
+    exclusions: ["Single private AC room limit", "PED waiting 3 years"]
+    source_url: "https://www.policybazaar.com/insurance-companies/icici-lombard-health-insurance/elevate-plan/"
+  - id: aditya-birla-activ-one
+    category: health
+    insurer: Aditya Birla Health
+    plan: Activ One
+    premium_from_inr: null
+    premium_note: null
+    cover: "Sum insured ₹2L–₹6Cr"
+    claim_settlement_ratio: 97.4
+    network: "18,782 cashless hospitals"
+    highlights: ["Up to 100% premium back via HealthReturns", "Any room; unlimited restoration", "90/180-day pre/post hospitalisation"]
+    exclusions: ["10% co-pay at non-PPN hospitals", "Worldwide cover and maternity not covered", "PED waiting 3 years"]
+    source_url: "https://www.policybazaar.com/insurance-companies/aditya-birla-health-insurance/activ-one-plan/"
+  - id: tata-aig-medicare-select
+    category: health
+    insurer: Tata AIG
+    plan: MediCare Select
+    premium_from_inr: null
+    premium_note: null
+    cover: "Sum insured ₹5L–₹1Cr"
+    claim_settlement_ratio: 100.0
+    network: "15,025 cashless hospitals"
+    highlights: ["No medicals up to 65y and ₹50L SI", "Claim-free bonus 50% a year up to 100%", "Discounts for young families and salaried buyers"]
+    exclusions: ["Worldwide cover not covered", "PED waiting 3 years"]
+    source_url: "https://www.policybazaar.com/insurance-companies/tata-aig-health-insurance/medicare-select/"
+  - id: bajaj-my-health-care
+    category: health
+    insurer: Bajaj General (formerly Bajaj Allianz)
+    plan: My Health Care
+    premium_from_inr: null
+    premium_note: null
+    cover: "Sum insured ₹3L–₹5Cr"
+    claim_settlement_ratio: 93.4
+    network: null
+    highlights: ["2-hour hospitalisation covered", "Global emergency care cover", "Cumulative bonus up to 100% of SI"]
+    exclusions: ["Obesity, infertility and cosmetic treatment", "Adventure-sport injuries", "20% co-pay on non-pre-approved OPD reimbursement"]
+    source_url: "https://www.policybazaar.com/insurance-companies/bajaj-allianz-health-insurance/my-health-care-plan/"
+  # term: CSR only where PB's top-5 table lists it
+  - id: lic-new-jeevan-amar
+    category: term
+    insurer: LIC
+    plan: New Jeevan Amar (955)
+    premium_from_inr: 5959
+    premium_note: "per year; LIC sample, ₹50L cover, age 20, 20-year term, non-smoker male, regular pay"
+    cover: "Life cover ₹25L to no limit"
+    claim_settlement_ratio: 98.74
+    network: null
+    highlights: ["Level or increasing sum assured", "Special rates for women", "Single, limited or regular pay"]
+    exclusions: []
+    source_url: "https://www.policybazaar.com/term-insurance/lic-new-jeevan-amar-plan/"
+  - id: hdfc-life-click-2-protect-supreme-plus
+    category: term
+    insurer: HDFC Life
+    plan: Click 2 Protect Supreme Plus
+    premium_from_inr: null
+    premium_note: null
+    cover: "Life cover ₹10,000 to no limit; entry age 18–65"
+    claim_settlement_ratio: 99.72
+    network: null
+    highlights: ["Life-stage cover increases without fresh medicals", "Return of Premium option", "Terminal illness payout until age 80"]
+    exclusions: []
+    source_url: "https://www.policybazaar.com/term-insurance/hdfc-life-click-2-protect-supreme-plus/"
+  - id: icici-pru-iprotect-smart-plus
+    category: term
+    insurer: ICICI Prudential Life
+    plan: iProtect Smart Plus
+    premium_from_inr: null
+    premium_note: null
+    cover: "Life cover ₹50L–₹20Cr; entry age 18–65"
+    claim_settlement_ratio: 99.34
+    network: null
+    highlights: ["₹3L instant payout on claim intimation", "15% lifetime discount for women", "Smart Exit refunds premiums paid"]
+    exclusions: []
+    source_url: "https://www.policybazaar.com/term-insurance/icici-pru-iprotect-smart-term-plan/"
+  - id: axis-max-life-smart-term-plus
+    category: term
+    insurer: Axis Max Life
+    plan: Smart Term Plan Plus
+    premium_from_inr: null
+    premium_note: null
+    cover: "Life cover ₹25L–₹20Cr; entry age 18–60"
+    claim_settlement_ratio: 99.8
+    network: null
+    highlights: ["8 variants", "Instant payment on claim intimation", "Built-in terminal illness cover; special exit value"]
+    exclusions: []
+    source_url: "https://www.policybazaar.com/term-insurance/max-life-smart-term-plan-plus/"
+  - id: sbi-life-smart-shield-plus
+    category: term
+    insurer: SBI Life
+    plan: Smart Shield Plus
+    premium_from_inr: null
+    premium_note: null
+    cover: "Life cover ₹25L to no limit; entry age 18–65"
+    claim_settlement_ratio: 98.56
+    network: null
+    highlights: ["Level, increasing or future-proofing cover", "Optional spouse cover (Better Half)", "Whole-life option to age 100"]
+    exclusions: []
+    source_url: "https://www.policybazaar.com/term-insurance/sbi-life-smart-shield-plus/"
+  - id: tata-aia-sampoorna-raksha-promise
+    category: term
+    insurer: Tata AIA Life
+    plan: Sampoorna Raksha Promise
+    premium_from_inr: null
+    premium_note: null
+    cover: "Life cover ₹25L to no limit; entry age 18–65"
+    claim_settlement_ratio: null
+    network: null
+    highlights: ["50% of cover paid early on terminal illness", "Whole-life option to age 100", "FlexiPay defers premiums up to 12 months"]
+    exclusions: []
+    source_url: "https://www.policybazaar.com/term-insurance/tata-aia-sampoorna-raksha-promise/"
+  - id: bajaj-life-etouch-2
+    category: term
+    insurer: Bajaj Life
+    plan: eTouch II
+    premium_from_inr: null
+    premium_note: null
+    cover: "Life cover ₹50L to no limit; entry age 18–65"
+    claim_settlement_ratio: null
+    network: null
+    highlights: ["Lump-sum or monthly payout", "3 plan variants incl. return of premium", "₹5L payout on 60 critical illnesses"]
+    exclusions: []
+    source_url: "https://www.policybazaar.com/term-insurance/bajaj-allianz-life-etouch-term-plan/"
+  - id: digit-glow-plus
+    category: term
+    insurer: Go Digit Life
+    plan: Glow Plus
+    premium_from_inr: null
+    premium_note: null
+    cover: "Life cover ₹25L–₹25Cr; entry age 18–60, term 5–40 years"
+    claim_settlement_ratio: null
+    network: null
+    highlights: ["₹1L paid on claim intimation", "Pay Later defers premiums up to 12 months", "Smart Exit refunds 100% of premiums"]
+    exclusions: []
+    source_url: "https://www.policybazaar.com/term-insurance/digit-glow-plus/"
+  # travel: PB 'Starting Premium' is per trip
+  - id: tata-aig-travel
+    category: travel
+    insurer: Tata AIG
+    plan: Travel Insurance – International
+    premium_from_inr: 258
+    premium_note: "per trip (basis not stated), not annual"
+    cover: "Up to USD 10,00,000; trip cancellation USD 1,500"
+    claim_settlement_ratio: null
+    network: null
+    highlights: ["190+ countries", "No medical tests needed", "Visa-denial cover; home-to-home cover"]
+    exclusions: ["Travel against doctor's advice", "Pre-existing ailments", "Pregnancy"]
+    source_url: "https://www.policybazaar.com/insurance-companies/tata-aig-travel-insurance/"
+  - id: icici-lombard-tripsecure-plus
+    category: travel
+    insurer: ICICI Lombard
+    plan: TripSecure Plus
+    premium_from_inr: 45
+    premium_note: "per trip (basis not stated), not annual"
+    cover: "USD 50K–500K; trip cancellation USD 2,000"
+    claim_settlement_ratio: null
+    network: "Global cashless hospital network"
+    highlights: ["PED cover option", "Missed events due to itinerary change", "Cruise/adventure add-ons"]
+    exclusions: ["PED unless opted", "Drug/alcohol-related treatment", "Mental disorders"]
+    source_url: "https://www.policybazaar.com/insurance-companies/icici-lombard-travel-insurance/"
+  - id: hdfc-ergo-explorer
+    category: travel
+    insurer: HDFC ERGO
+    plan: Explorer
+    premium_from_inr: 84
+    premium_note: "per trip (basis not stated), not annual"
+    cover: "Up to USD 5,00,000; trip cancellation USD 500"
+    claim_settlement_ratio: null
+    network: "1 lakh+ cashless hospitals worldwide"
+    highlights: ["No health check-up needed", "Individual, family and multi-trip options", "24x7 claims support"]
+    exclusions: ["Pre-existing diseases", "Intoxicant-related injury", "War or breaking the law"]
+    source_url: "https://www.policybazaar.com/insurance-companies/hdfc-ergo-travel-insurance/"
+  - id: bajaj-travel
+    category: travel
+    insurer: Bajaj General (formerly Bajaj Allianz)
+    plan: Travel Care / Travel Prime (individual)
+    premium_from_inr: 199
+    premium_note: "per trip (basis not stated), not annual"
+    cover: "USD 50,000–150,000 (individual); trip cancellation up to USD 5,000"
+    claim_settlement_ratio: null
+    network: null
+    highlights: ["Cashless hospitalisation", "Baggage/passport loss and trip delay", "Senior plans for ages 61–70"]
+    exclusions: ["Pre-existing conditions", "Non-allopathic treatment", "Travel against doctor's advice"]
+    source_url: "https://www.policybazaar.com/insurance-companies/bajaj-allianz-travel-insurance/"
+  - id: niva-bupa-travelassure
+    category: travel
+    insurer: Niva Bupa
+    plan: TravelAssure
+    premium_from_inr: 155
+    premium_note: "per trip (basis not stated), not annual"
+    cover: "USD 50,000–500,000; trip cancellation USD 1,000"
+    claim_settlement_ratio: null
+    network: null
+    highlights: ["Hospital daily cash up to USD 50/day", "Dental up to USD 500", "Pre-existing disorders covered per terms"]
+    exclusions: ["Travel against doctor's advice", "Self-harm", "Alcohol/substance abuse"]
+    source_url: "https://www.policybazaar.com/insurance-companies/niva-bupa-travel-insurance/"
+  - id: care-explore
+    category: travel
+    insurer: Care Health
+    plan: Care Explore
+    premium_from_inr: 155
+    premium_note: "per trip (basis not stated), not annual"
+    cover: "USD 25,000–1,000,000; trip cancellation USD 1,000"
+    claim_settlement_ratio: null
+    network: null
+    highlights: ["Region variants (Asia, Europe, Canada+ …)", "No age bar", "Optional PED, visa-fee refund, adventure sports"]
+    exclusions: ["Hazardous activities", "Planned treatment", "Pregnancy unless add-on"]
+    source_url: "https://www.policybazaar.com/insurance-companies/religare-travel-insurance/"
+  - id: digit-travel
+    category: travel
+    insurer: Go Digit
+    plan: Happy Traveller / On-the-Move
+    premium_from_inr: 21
+    premium_note: "per trip (basis not stated), not annual"
+    cover: "Up to USD 500,000; trip cancellation USD 1,500"
+    claim_settlement_ratio: null
+    network: "10,000+ network hospitals in 150+ countries"
+    highlights: ["Pre-existing illness covered", "Paperless smartphone claims", "Single, annual and domestic trips"]
+    exclusions: ["War or nuclear risks", "Breaking the law", "Self-inflicted injury"]
+    source_url: "https://www.policybazaar.com/insurance-companies/digit-travel-insurance/"
+  - id: star-travel-protect
+    category: travel
+    insurer: Star Health
+    plan: Star Travel Protect
+    premium_from_inr: 307
+    premium_note: "per trip (basis not stated), not annual"
+    cover: "USD 50K–500K; trip cancellation USD 2,500"
+    claim_settlement_ratio: null
+    network: null
+    highlights: ["Plan A with or Plan B without USA/Canada", "Ages 6 months–70", "Trips of 7–180 days, extendable"]
+    exclusions: ["Pre-existing diseases", "Maternity", "Travel against medical advice"]
+    source_url: "https://www.policybazaar.com/insurance-companies/star-health-travel-insurance/"

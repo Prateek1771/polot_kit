@@ -1,0 +1,38 @@
+# Host ports avoid the self-hosted Langfuse stack (3000, 5432, 6379).
+x-api-env: &api-env
+  DATABASE_URL: postgresql://pilotkit:pilotkit@postgres:5432/pilotkit
+  REDIS_URL: redis://redis:6379
+  LANGFUSE_HOST: http://host.docker.internal:3000   # send traces to host Langfuse; links use LANGFUSE_BASE_URL
+  CORS_ORIGINS: http://localhost:3100
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment: {POSTGRES_USER: pilotkit, POSTGRES_PASSWORD: pilotkit, POSTGRES_DB: pilotkit}
+    ports: ["5433:5432"]
+    volumes: [pgdata:/var/lib/postgresql/data]
+    healthcheck: {test: ["CMD", "pg_isready", "-U", "pilotkit"], interval: 2s, retries: 30}
+  redis:
+    image: redis:7-alpine
+    ports: ["6380:6379"]
+  api:
+    build: ./api
+    env_file: .env
+    environment: *api-env
+    extra_hosts: ["host.docker.internal:host-gateway"]
+    ports: ["8000:8000"]
+    depends_on: {postgres: {condition: service_healthy}, redis: {condition: service_started}}
+  worker:
+    build: ./api
+    command: ["arq", "app.worker.WorkerSettings"]
+    env_file: .env
+    environment: *api-env
+    extra_hosts: ["host.docker.internal:host-gateway"]
+    depends_on: {api: {condition: service_started}}
+  web:
+    build:
+      context: ./web
+      args: {NEXT_PUBLIC_API_URL: "http://localhost:8000"}
+    ports: ["3100:3000"]
+    depends_on: [api]
+volumes:
+  pgdata:

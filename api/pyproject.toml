@@ -1,0 +1,22 @@
+[project]
+name = "pilotkit-api"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = [
+  "fastapi>=0.115",
+  "uvicorn[standard]>=0.32",
+  "httpx>=0.28",
+  "litellm>=1.60",
+  "langgraph>=0.3",
+  "psycopg[binary,pool]>=3.2",
+  "arq>=0.26",
+  "pyyaml>=6",
+  "langfuse>=2.50",
+]
+
+[dependency-groups]
+dev = ["pytest>=8", "pytest-asyncio>=0.24"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+pythonpath = ["."]
