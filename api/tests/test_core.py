@@ -104,3 +104,19 @@ async def test_jev_decides_through_litellm(monkeypatch):
     assert sent == {"model": jev.JEV_MODEL, "state": {"msg": "my car got hit"}, "questions": {"claim": {"type": "noul", "instructions": "Incident?"}}}
     assert jev.p(a, "claim") == 0.98
     assert a["_meta"]["cost"] == 1.2e-05 and a["_meta"]["model"] == "typesafe/jev-1.13-x"
+
+
+async def test_keepalive_ping_survives_failures():
+    """One healthy URL, one unreachable: both reported, nothing raised (the loop must never die)."""
+    import httpx
+
+    from app.main import ping
+
+    def handler(req: httpx.Request):
+        if req.url.host == "down.example":
+            raise httpx.ConnectError("refused", request=req)
+        return httpx.Response(200, json={"ok": True})
+
+    async with httpx.AsyncClient(transport=httpx.MockTransport(handler)) as c:
+        out = await ping(c, ["https://api.example/health", "https://down.example/"])
+    assert out == {"https://api.example/health": 200, "https://down.example/": "ConnectError"}

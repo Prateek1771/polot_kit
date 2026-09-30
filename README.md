@@ -104,8 +104,15 @@ docs/  PILOTKIT.md (design) · scaling-aws.md (AWS 1k → 1M) · diagrams/ (Arch
 | `JEV_FALLBACK=1` | Emulate Jev with the LLM if the alpha Decisions API is down (same answer shape) |
 | `LANGFUSE_PUBLIC_KEY`, `LANGFUSE_SECRET_KEY` | Turn tracing on (no keys, no traces) |
 | `LANGFUSE_BASE_URL`, `LANGFUSE_PROJECT_ID` | Trace links in the Lab; the project id is resolved from the keys when empty. In compose, traces go to `LANGFUSE_HOST=http://host.docker.internal:3000` |
+| `KEEPALIVE_URLS`, `KEEPALIVE_SECONDS` | Render keep-alive: extra URLs to ping (the API's own URL is automatic on Render) and the interval (default 600 s, 0 disables) |
 
 After changing `.env`, restart the backend with `docker compose up -d api worker`. Containers read their environment only at start.
+
+## Deploying on Render (free tier)
+Render's free web services sleep after 15 minutes without inbound traffic, and the next visitor waits about a minute for a cold start. The API keeps itself awake. On Render, where `RENDER_EXTERNAL_URL` is set automatically, a background task in the API's startup pings its own public `/health` every `KEEPALIVE_SECONDS` (10 min). Add the web service's URL to `KEEPALIVE_URLS` to keep the frontend awake too. Locally nothing runs.
+- **Hours budget:** free instance hours (750/month per workspace) cover about one service running around the clock. Keeping both api and web awake needs about 1,490 hours, so upgrade one of them or accept that the web service sleeps.
+- **The ping can't wake a sleeping service.** It only prevents sleep. If a service is ever down (hours exhausted, crash), an external pinger such as cron-job.org or UptimeRobot, hitting `/health` every 10 min, brings it back.
+- The arq **worker** needs a Render Background Worker, which isn't on the free tier. Without it, Test Lab suites queue but don't run, while the chat still works.
 
 ## Develop
 ```bash

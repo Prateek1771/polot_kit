@@ -20,6 +20,33 @@ LANGFUSE_UI = os.getenv("LANGFUSE_BASE_URL") or os.getenv("LANGFUSE_HOST", "http
 LANGFUSE_PROJECT = os.getenv("LANGFUSE_PROJECT_ID")
 EFFECTIVE = "coalesce(s.human_label, s.verdict)"
 
+# Render's free web services sleep after 15 min without inbound HTTP traffic. On Render (it sets RENDER_EXTERNAL_URL)
+# the API pings its own public /health, plus any KEEPALIVE_URLS (e.g. the web service), every KEEPALIVE_SECONDS.
+# ponytail: an in-process timer can't wake a service that is already asleep; add an external pinger (cron-job.org,
+# UptimeRobot) if the service may be down when a ping is due, e.g. after the free monthly hours run out.
+KEEPALIVE_URLS = [u.strip() for u in [f"{os.environ['RENDER_EXTERNAL_URL']}/health" if os.getenv("RENDER_EXTERNAL_URL") else "",
+                                      *os.getenv("KEEPALIVE_URLS", "").split(",")] if u.strip()]
+KEEPALIVE_SECONDS = int(os.getenv("KEEPALIVE_SECONDS", "600"))  # < 15 min; 0 disables
+
+
+async def ping(client: httpx.AsyncClient, urls: list[str]) -> dict[str, int | str]:
+    """GET each URL once; a failed ping is logged, never raised (the next tick retries)."""
+    out: dict[str, int | str] = {}
+    for u in urls:
+        try:
+            out[u] = (await client.get(u)).status_code
+        except httpx.HTTPError as e:
+            out[u] = type(e).__name__
+            print(f"keepalive {u} failed: {e!r}")
+    return out
+
+
+async def keepalive(urls: list[str], every: int):
+    async with httpx.AsyncClient(timeout=30, follow_redirects=True) as c:
+        while True:
+            await asyncio.sleep(every)
+            await ping(c, urls)
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -44,7 +71,10 @@ async def lifespan(app: FastAPI):
     )
     await resolve_langfuse_project()
     app.state.arq = await create_pool(REDIS)
+    pinger = asyncio.create_task(keepalive(KEEPALIVE_URLS, KEEPALIVE_SECONDS)) if KEEPALIVE_URLS and KEEPALIVE_SECONDS else None
     yield
+    if pinger:
+        pinger.cancel()
     await app.state.arq.close()
 
 
