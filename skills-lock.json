@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "skills": {
+    "aws-agentic-ai": {
+      "source": "zxkane/aws-skills",
+      "sourceType": "github",
+      "skillPath": "plugins/aws-agentic-ai/skills/aws-agentic-ai/SKILL.md",
+      "computedHash": "01ec7ed1d331f707d460b9c34a85b2754b2faa7ea2cf0f91568eb1398f0bfccf"
+    },
+    "aws-cdk-development": {
+      "source": "zxkane/aws-skills",
+      "sourceType": "github",
+      "skillPath": "plugins/aws-iac/skills/aws-cdk-development/SKILL.md",
+      "computedHash": "902a20fa5ccdfb06d757fd7d68e75279796d9661b9bb76096de7208585a6173b"
+    },
+    "aws-cost-operations": {
+      "source": "zxkane/aws-skills",
+      "sourceType": "github",
+      "skillPath": "plugins/aws-cost-ops/skills/aws-cost-operations/SKILL.md",
+      "computedHash": "cb43130ac9850886b5b5e51d38d75b7c55495d6232a352640c8a70b48f24e35d"
+    },
+    "aws-mcp-setup": {
+      "source": "zxkane/aws-skills",
+      "sourceType": "github",
+      "skillPath": "plugins/aws-common/skills/aws-mcp-setup/SKILL.md",
+      "computedHash": "d2af7ab60ac1f9f70fb03107e0a3e4c6d5511e3de9b922f2b15cb3f57659684a"
+    },
+    "aws-serverless-eda": {
+      "source": "zxkane/aws-skills",
+      "sourceType": "github",
+      "skillPath": "plugins/serverless-eda/skills/aws-serverless-eda/SKILL.md",
+      "computedHash": "d166208de3491d7e7c18d79ee46cc061947ae0e814c696ad78b8b2c53e0745ce"
+    },
+    "aws-sst-development": {
+      "source": "zxkane/aws-skills",
+      "sourceType": "github",
+      "skillPath": "plugins/aws-iac/skills/aws-sst-development/SKILL.md",
+      "computedHash": "784a6bd56b2e8bd291214b2567f9ec26fda751da3e30adee70165408adfe7f5b"
+    },
+    "brainstorming": {
+      "source": "obra/superpowers",
+      "sourceType": "github",
+      "skillPath": "skills/brainstorming/SKILL.md",
+      "computedHash": "fef7f05d17a88e6b498f24d1b2081880a4666a664cc49881f56527808f26fbd6"
+    },
+    "high-end-visual-design": {
+      "source": "Leonxlnx/taste-skill",
+      "sourceType": "github",
+      "skillPath": "skills/soft-skill/SKILL.md",
+      "computedHash": "f730e4132775f13eea19e3dc39afc6bb453cfc0498872b127ad8f0d47cfd802d"
+    }
+  }
+}

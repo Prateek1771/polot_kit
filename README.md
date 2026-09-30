@@ -123,3 +123,5 @@ Deliberate shortcuts are marked with `ponytail:` comments in the code. [`docs/sc
 - **Suite concurrency.** Suites run 5 chats in parallel per run. On a low-tier OpenAI key, LiteLLM retries absorb TPM rate limits.
 - **Single-host deploy.** Docker Compose only; the AWS path is designed in `docs/scaling-aws.md` but not built.
 - **No git remote.** Diagram source badges are local-only; the specs use a placeholder origin.
+#   p o l o t _ k i t  
+ 
