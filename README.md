@@ -2,6 +2,8 @@
 
 **PilotKit** is an insurance assistant with a test lab that proves it works before the pilot.
 
+Repository: [github.com/Prateek1771/polot_kit](https://github.com/Prateek1771/polot_kit)
+
 ![Landing](docs/screenshots/landing.png)
 
 - **CoverWise Assistant** (`/chat`). One chat serves everyone:
@@ -28,7 +30,8 @@
 
 ## Quickstart
 ```bash
-cp .env.example .env      # set OPENROUTER_API_KEY (Jev) and OPENAI_API_KEY (LLM)
+git clone https://github.com/Prateek1771/polot_kit.git && cd polot_kit
+cp .env.example .env      # set OPENROUTER_API_KEY (Jev) and OPENAI_API_KEY (LLM); .env is git-ignored
 docker compose up --build
 ```
 | URL | What |
@@ -122,6 +125,4 @@ Deliberate shortcuts are marked with `ponytail:` comments in the code. [`docs/sc
 - **Suite progress polling** (`main.py:187`). The Lab polls the DB every second instead of using pub/sub.
 - **Suite concurrency.** Suites run 5 chats in parallel per run. On a low-tier OpenAI key, LiteLLM retries absorb TPM rate limits.
 - **Single-host deploy.** Docker Compose only; the AWS path is designed in `docs/scaling-aws.md` but not built.
-- **No git remote.** Diagram source badges are local-only; the specs use a placeholder origin.
-#   p o l o t _ k i t  
- 
+- **Diagram source links are local-only.** The Archify specs were verified against local commits with a placeholder origin, so each node's `SRC` badge shows file and lines but doesn't link to GitHub. To get clickable links, re-run `finalize` with `repository.url` set to the GitHub URL and `link_mode: web`, after the cited commit is pushed.
