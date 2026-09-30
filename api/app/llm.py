@@ -21,10 +21,14 @@ def session(conv_id) -> None:
     _session.set(str(conv_id))
 
 
+def _metadata(name: str, tags: list[str]) -> dict:
+    return {"generation_name": name, "trace_name": name, "session_id": _session.get(), "tags": tags}
+
+
 async def acall(name: str, tags: list[str], **kw):
     """litellm.acompletion with Langfuse naming/session metadata, plus exponential backoff on 429s
     (suites run several chats in parallel against one TPM budget)."""
-    kw["metadata"] = {"generation_name": name, "trace_name": name, "session_id": _session.get(), "tags": tags}
+    kw["metadata"] = _metadata(name, tags)
     for attempt in range(6):
         try:
             return await litellm.acompletion(**kw)
@@ -53,6 +57,15 @@ async def stream(messages: list[dict], name: str = "llm-stream"):
         if delta:
             yield delta
     yield _cost(litellm.stream_chunk_builder(chunks, messages=messages))
+
+
+STT_MODEL = os.getenv("STT_MODEL", "gpt-4o-mini-transcribe")  # OpenAI speech-to-text, same OPENAI_API_KEY
+
+
+async def transcribe(audio: bytes, filename: str) -> str:
+    """Voice mode: speech -> text via LiteLLM (traced like every other call). The filename's extension tells OpenAI the format."""
+    r = await litellm.atranscription(model=STT_MODEL, file=(filename, audio), metadata=_metadata("transcribe", ["llm", "stt"]))
+    return (r.text or "").strip()
 
 
 def _cost(resp) -> float:

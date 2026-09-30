@@ -31,6 +31,15 @@ export async function post<T = any>(path: string, body?: unknown): Promise<T> {
   }))).json();
 }
 
+/** Voice mode: raw recorded audio -> transcript (the API transcribes with OpenAI through LiteLLM). */
+export async function postAudio(audio: Blob, conversationId?: string | null): Promise<string> {
+  const h = await authHeaders();
+  h["Content-Type"] = audio.type || "audio/webm";
+  const q = conversationId ? `?conversation_id=${encodeURIComponent(conversationId)}` : "";
+  const r = await ok(await fetch(`${API}/transcribe${q}`, { method: "POST", headers: h, body: audio }));
+  return (await r.json()).text as string;
+}
+
 /** URL for an EventSource stream (EventSource can't send headers, so the token rides as ?access_token=). */
 export async function streamUrl(path: string): Promise<string> {
   const t = await accessToken();

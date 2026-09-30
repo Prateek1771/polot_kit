@@ -12,7 +12,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
-from . import db
+from . import db, llm
 from .bot import CATALOG, CUSTOMERS, SUITE, chat_turn
 from .worker import REDIS
 
@@ -204,6 +204,32 @@ async def chat(body: ChatIn, user: dict | None = Depends(optional_user)):
         except Exception as e:
             yield {"type": "error", "message": f"{type(e).__name__}: {e}"[:300]}
     return sse(gen())
+
+
+# Voice mode: the browser records with MediaRecorder and POSTs the raw audio; the transcript is then sent as a chat message.
+AUDIO_EXT = {"audio/webm": "webm", "audio/ogg": "ogg", "audio/mp4": "m4a", "audio/mpeg": "mp3", "audio/wav": "wav", "audio/x-wav": "wav"}
+MAX_AUDIO = 10 * 1024 * 1024  # ~10 min of opus; OpenAI allows 25 MB, the recorder stops at 2 min anyway
+
+
+@app.post("/transcribe")
+async def transcribe(request: Request, conversation_id: str | None = None):
+    ext = AUDIO_EXT.get(request.headers.get("content-type", "").split(";")[0].strip().lower())
+    if not ext:
+        raise HTTPException(415, f"send audio as one of: {', '.join(AUDIO_EXT)}")
+    audio = bytearray()
+    async for chunk in request.stream():  # cap while reading, so an oversized upload never sits in memory
+        audio += chunk
+        if len(audio) > MAX_AUDIO:
+            raise HTTPException(413, "recording too long")
+    if not audio:
+        raise HTTPException(400, "empty recording")
+    if conversation_id:
+        llm.session(conversation_id)  # trace the transcription in the chat's Langfuse session
+    try:
+        text = await llm.transcribe(bytes(audio), f"voice.{ext}")
+    except Exception as e:
+        raise HTTPException(502, f"transcription failed: {type(e).__name__}: {e}"[:300])
+    return {"text": text}
 
 
 @app.post("/conversations/{conv_id}/end")

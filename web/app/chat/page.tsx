@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { ChatCard } from "@/components/chat-cards";
+import { VoiceButton } from "@/components/voice";
 import { Bezel, Eyebrow, label, ms, ProbBar, selectCls, usd } from "@/components/pk";
 import { Button } from "@/components/ui/button";
 import { post, postStream, type JevAnswers, type Message } from "@/lib/api";
@@ -239,6 +240,7 @@ export default function ChatPage() {
                 onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(input); } }}
                 placeholder="Ask about a policy, claim or plan…"
                 className="max-h-40 min-h-10 flex-1 resize-none bg-transparent px-3 py-2 text-base outline-none placeholder:text-muted-foreground sm:text-sm" />
+              <VoiceButton onText={send} disabled={busy} conversationId={convId} />
               <Button type="submit" size="icon-lg" disabled={!input.trim() || busy} aria-label="Send message" className="size-10 rounded-full transition-transform duration-500 hover:scale-105 active:scale-95">
                 {busy ? <CircleNotch className="size-[18px] animate-spin" /> : <ArrowUp className="size-[18px]" weight="regular" />}
               </Button>

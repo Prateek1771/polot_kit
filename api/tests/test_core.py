@@ -164,3 +164,26 @@ async def test_lab_routes_need_staff(monkeypatch):
         assert e.value.status_code == code
     assert (await main.lab_user(req([("authorization", "Bearer staff-token")])))["id"] == "u1"
     assert (await main.lab_user(req(query=b"access_token=staff-token")))["id"] == "u1"  # EventSource path
+
+
+def test_transcribe_endpoint(monkeypatch):
+    """Voice mode: audio in -> transcript out; wrong type 415, empty 400, oversized 413."""
+    from fastapi.testclient import TestClient
+
+    from app import main
+
+    seen = {}
+
+    async def fake_transcribe(audio, filename):
+        seen["name"], seen["size"] = filename, len(audio)
+        return "when does my car policy renew"
+
+    monkeypatch.setattr(main.llm, "transcribe", fake_transcribe)
+    monkeypatch.setattr(main, "MAX_AUDIO", 1000)
+    c = TestClient(main.app)  # no `with`: skips lifespan (no DB needed)
+    r = c.post("/transcribe", content=b"\x1aE\xdf\xa3" * 10, headers={"content-type": "audio/webm;codecs=opus"})
+    assert r.status_code == 200 and r.json() == {"text": "when does my car policy renew"}
+    assert seen == {"name": "voice.webm", "size": 40}
+    assert c.post("/transcribe", content=b"x", headers={"content-type": "text/plain"}).status_code == 415
+    assert c.post("/transcribe", content=b"", headers={"content-type": "audio/mp4"}).status_code == 400
+    assert c.post("/transcribe", content=b"x" * 1001, headers={"content-type": "audio/ogg"}).status_code == 413
