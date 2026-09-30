@@ -148,7 +148,7 @@ export default function ChatPage() {
               <option value="good">Prompt: production</option>
               <option value="bad">Prompt: broken (demo)</option>
             </select>
-            <Button variant="outline" size="lg" className="h-10 rounded-full px-4 active:scale-[0.98]" onClick={endChat} disabled={!convId || busy || ended}>
+            <Button variant="outline" size="lg" className="h-10 rounded-full px-4 active:scale-[0.98]" onClick={endChat} disabled={!convId || busy || ended} aria-label="End chat and grade">
               <ClipboardText className="size-[18px]" /> <span className="hidden md:inline">End &amp; grade</span>
             </Button>
             <Button variant="ghost" size="icon-lg" className="size-10 rounded-full active:scale-95" onClick={reset} aria-label="New chat"><ArrowCounterClockwise className="size-[18px]" /></Button>

@@ -56,7 +56,7 @@ export default function Landing() {
     mm.add(MOTION_OK, () => {
       const tl = gsap.timeline({ defaults: { ease: EASE } });
       tl.from(".pk-mask > span", { yPercent: 115, duration: 1.2, stagger: 0.07 })
-        .from("[data-hero-fade]", { y: 28, autoAlpha: 0, filter: "blur(10px)", duration: 1, stagger: 0.1, clearProps: "filter" }, "-=0.8")
+        .from("[data-hero-fade]", { y: 28, duration: 1, stagger: 0.1 }, "-=0.8") // no fade: the hero copy is the LCP element
         .from("[data-hero-card]", { y: 90, autoAlpha: 0, rotate: 6, duration: 1.3, stagger: 0.14 }, "-=0.9");
 
       gsap.utils.toArray<HTMLElement>("[data-depth]").forEach((el) => {
@@ -100,9 +100,10 @@ export default function Landing() {
     const mm = gsap.matchMedia();
     mm.add(MOTION_OK, () => {
       const rows = gsap.utils.toArray<HTMLElement>("[data-marquee]");
-      const loops = rows.map((row, i) => gsap.fromTo(row, { xPercent: i % 2 ? -50 : 0 }, { xPercent: i % 2 ? 0 : -50, duration: 60, ease: "none", repeat: -1 }));
+      const loops = rows.map((row, i) => gsap.fromTo(row, { xPercent: i % 2 ? -50 : 0 }, { xPercent: i % 2 ? 0 : -50, duration: 60, ease: "none", repeat: -1, paused: true }));
       ScrollTrigger.create({
         trigger: "#catalog", start: "top bottom", end: "bottom top",
+        onToggle: (self) => loops.forEach((l) => (self.isActive ? l.play() : l.pause())), // no work while offscreen
         onUpdate: (self) => {
           const boost = 1 + Math.min(Math.abs(self.getVelocity()) / 300, 6);
           loops.forEach((l) => gsap.to(l, { timeScale: boost, duration: 0.2, overwrite: true, onComplete: () => { gsap.to(l, { timeScale: 1, duration: 1.2, ease: EASE }); } }));
@@ -149,9 +150,9 @@ export default function Landing() {
             <div data-depth="1" className="md:absolute md:left-0 md:top-0 md:w-[82%]">
               <GlassCard data-hero-card className="md:-rotate-3">
                 <div className="flex flex-col gap-2.5 p-5 text-sm">
-                  <div className="self-end rounded-3xl rounded-br-lg bg-primary px-4 py-2.5 text-white">When does my car policy renew?</div>
+                  <div className="self-end rounded-3xl rounded-br-lg bg-primary px-4 py-2.5 text-primary-foreground">When does my car policy renew?</div>
                   <div className="self-start rounded-3xl rounded-tl-lg bg-white/[0.07] px-4 py-2.5 text-white/85">Could you share your full name as it appears on the policy?</div>
-                  <div className="self-end rounded-3xl rounded-br-lg bg-primary px-4 py-2.5 text-white">priya sharma</div>
+                  <div className="self-end rounded-3xl rounded-br-lg bg-primary px-4 py-2.5 text-primary-foreground">priya sharma</div>
                 </div>
               </GlassCard>
             </div>

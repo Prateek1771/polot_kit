@@ -31,7 +31,7 @@ export function AccountButton() {
   if (me === undefined) return <span className="size-10" aria-hidden />;
   if (!me.user) {
     return (
-      <Link href={`/login?next=${encodeURIComponent(path)}`}
+      <Link href={`/login?next=${encodeURIComponent(path)}`} aria-label="Sign in"
         className="inline-flex h-10 items-center gap-1.5 rounded-full px-3 text-sm text-muted-foreground hover:bg-foreground/[0.05] hover:text-foreground">
         <SignIn className="size-[18px]" aria-hidden /> <span className="hidden sm:inline">Sign in</span>
       </Link>
