@@ -3,7 +3,7 @@ import asyncio
 import json
 
 from . import db, jev, llm
-from .bot import SUITE, chat_turn
+from .bot import SUITE, chat_turn, demo_email
 from .judge import judge_conversation
 
 MAX_TURNS = 8
@@ -25,9 +25,10 @@ async def _user_message(persona: dict, history: list[dict], move: str):
 
 
 async def simulate(run_id: str, persona: dict, variant: str):
+    # simulated users are "signed in" server-side as their persona's demo account (no InsForge login for bots)
     row = await db.one(
-        "insert into conversation (source, run_id, persona, prompt_variant) values ('sim',%s,%s,%s) returning id",
-        run_id, persona["id"], variant,
+        "insert into conversation (source, run_id, persona, prompt_variant, user_email) values ('sim',%s,%s,%s,%s) returning id",
+        run_id, persona["id"], variant, demo_email(persona.get("facts", {}).get("full_name")),
     )
     conv_id = str(row["id"])
     llm.session(conv_id)  # persona messages + next_move share the bot's Langfuse session

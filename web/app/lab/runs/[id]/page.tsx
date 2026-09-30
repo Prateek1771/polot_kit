@@ -6,7 +6,7 @@ import { useParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { Bezel, Empty, Eyebrow, Kpi, label, ms, pct, usd, VerdictPill } from "@/components/pk";
 import { Skeleton } from "@/components/ui/skeleton";
-import { API, get, type Run, type RunStats } from "@/lib/api";
+import { get, streamUrl, type Run, type RunStats } from "@/lib/api";
 import { useReveal } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 
@@ -31,16 +31,23 @@ export default function RunReport() {
       get<Conv[]>(`/conversations?run_id=${id}`).then(setConvs);
     };
     load();
-    const es = new EventSource(`${API}/runs/${id}/events`);
+    let es: EventSource | null = null;
     let last = -1;
-    es.onmessage = (e) => {
-      const p = JSON.parse(e.data);
-      setProgress(p);
-      if (p.judged !== last) { last = p.judged; load(); }
-      if (p.status === "done" || p.status === "failed") { es.close(); load(); }
-    };
-    es.onerror = () => es.close();
-    return () => es.close();
+    let closed = false;
+    // EventSource can't send an Authorization header, so the token rides in the URL (streamUrl)
+    streamUrl(`/runs/${id}/events`).then((url) => {
+      if (closed) return;
+      const src = new EventSource(url);
+      es = src;
+      src.onmessage = (e) => {
+        const p = JSON.parse(e.data);
+        setProgress(p);
+        if (p.judged !== last) { last = p.judged; load(); }
+        if (p.status === "done" || p.status === "failed") { src.close(); load(); }
+      };
+      src.onerror = () => src.close();
+    });
+    return () => { closed = true; es?.close(); };
   }, [id]);
 
   if (!rep) return <div ref={root} className="mx-auto max-w-7xl px-4 py-16"><Skeleton className="h-10 w-72 rounded-full" /><Skeleton className="mt-8 h-28 rounded-[2rem]" /><Skeleton className="mt-5 h-64 rounded-[2rem]" /></div>;

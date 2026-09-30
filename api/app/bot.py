@@ -4,6 +4,7 @@ One bot serves customers and prospects. Customers are identified by full name be
 prospects get plans picked in code from the market catalog.
 """
 import json
+import os
 import re
 import secrets
 import time
@@ -49,9 +50,10 @@ CATALOG_ROUTES = ("shop", "coverage")  # turns that need the whole market catalo
 
 class S(TypedDict, total=False):
     conv_id: str
+    user_email: str | None  # InsForge account the conversation belongs to (None = not signed in)
     history: list[dict]  # prior messages: {role, content}
     user_text: str
-    memory: dict  # fields, awaiting_confirm, claim_id, customer, awaiting_name, name_misses, profile, shopping
+    memory: dict  # fields, awaiting_confirm, claim_id, customer, profile, shopping
     jev: dict  # router answers for this turn
     route: str
     instructions: str
@@ -67,8 +69,6 @@ def route(answers: dict, memory: dict) -> str:
         return "handoff"
     intent = answers.get("intent", {})
     choice, conf = intent.get("choice", "other"), float(intent.get("confidence", 0))
-    if memory.get("awaiting_name") and choice in ("other", "my_policy"):
-        return "identify"
     if memory.get("awaiting_confirm") and not memory.get("claim_id") and jev.p(answers, "confirms") >= T_PASS:
         return "new_claim"  # "yes, correct — and is my helmet covered?" confirms first; the side question rides along
     in_claim_flow = not memory.get("claim_id") and (
@@ -78,8 +78,10 @@ def route(answers: dict, memory: dict) -> str:
         return "new_claim"
     if memory.get("shopping") and choice == "other":
         return "shop"
+    if choice in ("my_policy", "new_claim", "claim_status") and not memory.get("customer"):
+        return "identify"  # own policies, claims and claim status need a verified (signed-in) customer
     if choice == "my_policy":
-        return "my_policy" if memory.get("customer") else "identify"
+        return "my_policy"
     if choice == "other" or conf < 0.5:
         return "clarify"
     return {"new_claim": "new_claim", "claim_status": "status", "coverage_question": "coverage", "shop_plans": "shop"}[choice]
@@ -89,8 +91,19 @@ def mask(v: str) -> str:
     return v if len(v) <= 4 else "•" * (len(v) - 4) + v[-4:]
 
 
-def normalise_name(name: str) -> str:
-    return " ".join(name.split()).lower()
+def normalise_email(email: str | None) -> str:
+    return (email or "").strip().lower()
+
+
+def demo_email(full_name: str | None) -> str | None:
+    """customers.yaml convention for demo accounts: "Priya Sharma" -> priya.sharma@coverwise.demo."""
+    return ".".join(full_name.lower().split()) + "@coverwise.demo" if full_name else None
+
+
+# Real sign-up emails linked to demo customers, e.g. "you@gmail.com=Priya Sharma,friend@x.com=Arjun Mehta".
+# Kept in the environment so personal emails never land in git.
+DEMO_CUSTOMER_EMAILS = {e.strip().lower(): n.strip().lower() for e, _, n in
+                        (pair.partition("=") for pair in os.getenv("DEMO_CUSTOMER_EMAILS", "").split(",")) if e.strip() and n.strip()}
 
 
 def pick_plans(plans: list[dict], profile: dict, n: int = 3) -> tuple[list[dict], bool]:
@@ -162,7 +175,7 @@ async def n_router(s: S) -> S:
     mem = s["memory"]
     answers = await jev.decide(
         {"conversation": transcript(s["history"], s["user_text"]), "claim_fields_so_far": mem.get("fields", {}),
-         "customer_verified": bool(mem.get("customer")), "assistant_asked_for_full_name": bool(mem.get("awaiting_name"))},
+         "customer_verified": bool(mem.get("customer")), "user_signed_in": bool(s.get("user_email"))},
         SUITE["router"], name="jev-router",
     )
     extra = []
@@ -172,37 +185,28 @@ async def n_router(s: S) -> S:
 
 
 async def n_identify(s: S) -> S:
+    """Verify the customer from the signed-in InsForge account: policies whose holder_email is the account email."""
     mem = dict(s["memory"])
-    found, cost = await extract(
-        'The USER may have typed their full name. JSON only: {"full_name": str|null}. '
-        "Only a person's name they gave for themselves; null if none.", "USER MESSAGE:\n" + s["user_text"], "extract-name")
-    cost += s.get("cost", 0)
-    name = (found.get("full_name") or "").strip()
-    if not name:
-        mem["awaiting_name"] = True
-        return {"memory": mem, "cost": cost, "instructions": s["instructions"] + (
-            " To look up their policy, ask the user for their full name exactly as it appears on the policy document. "
-            "Do not share any policy details yet.")}
-    # ponytail: a full name alone unlocks (demo) policy data and namesakes would see each other's policies;
-    # a real deploy verifies DOB or an OTP to the registered mobile before this lookup.
-    rows = await db.many("select * from policy where lower(holder_name)=%s order by end_date", normalise_name(name))
+    email = normalise_email(s.get("user_email"))
+    if not email:
+        return {"memory": mem, "cards": [{"type": "signin"}], "instructions": s["instructions"] + (
+            " The user is not signed in. Say they need to sign in (card shown) to see their own policies, file a claim "
+            "or check a claim. Do not share or confirm any policy or claim details. Offer to help compare plans meanwhile.")}
+    rows = await db.many("select * from policy where lower(holder_email)=%s or lower(holder_name)=%s order by end_date",
+                         email, DEMO_CUSTOMER_EMAILS.get(email, ""))
     if not rows:
-        mem.update(awaiting_name=True, name_misses=mem.get("name_misses", 0) + 1)
-        if mem["name_misses"] >= 2:
-            return {"memory": mem, "cost": cost, "cards": [{"type": "handoff"}], "instructions": s["instructions"] + (
-                f" Apologise: we still could not find any policy under the name '{name}'. Offer a human agent (card shown) "
-                "who can locate it with other details, or offer to help them explore new plans.")}
-        return {"memory": mem, "cost": cost, "instructions": s["instructions"] + (
-            f" Say sorry, we could not find any policy under the name '{name}'. Ask them to check the spelling and enter their "
-            "full name exactly as on the policy document, or offer to help them explore new plans instead.")}
+        return {"memory": mem, "cards": [{"type": "handoff"}], "instructions": s["instructions"] + (
+            f" Apologise: no CoverWise policy is linked to the signed-in account {email}. Offer a human agent (card shown) "
+            "who can link it using other details, or offer to help them explore new plans.")}
     cards = [policy_card(r) for r in rows]
-    mem.update(awaiting_name=False, name_misses=0, customer={
-        "name": rows[0]["holder_name"],
+    mem["customer"] = {
+        "name": rows[0]["holder_name"], "email": email,
         "policies": [{**c, "policy_no_full": r["policy_no"]} for c, r in zip(cards, rows)],
-    })
-    return {"memory": mem, "cost": cost, "cards": cards, "instructions": s["instructions"] + (
-        f" The customer is verified as {rows[0]['holder_name']}. Greet them by first name, say you found {len(rows)} "
-        "policy/policies (shown as cards), and answer their original question from the conversation using CUSTOMER data.")}
+    }
+    return {"memory": mem, "cards": cards, "instructions": s["instructions"] + (
+        f" The customer is verified as {rows[0]['holder_name']} (signed in). Greet them by first name, say you found {len(rows)} "
+        "policy/policies (shown as cards), and answer their original question from the conversation using CUSTOMER data. "
+        "If they wanted to file or check a claim, continue with that now.")}
 
 
 async def n_my_policy(s: S) -> S:
@@ -281,9 +285,10 @@ async def n_status(s: S) -> S:
                 + ". Explain what each status means using the POLICY."}
     if not ids:
         return {"instructions": s["instructions"] + " Ask the user for their claim ID (format CLM-XXXXXX)."}
-    row = await db.one("select id, status, incident_date from claim where upper(id)=upper(%s)", ids[-1])
+    own = [p["policy_no_full"] for p in (s["memory"].get("customer") or {}).get("policies", [])]
+    row = await db.one("select id, status, incident_date from claim where upper(id)=upper(%s) and policy_no = any(%s)", ids[-1], own)
     if not row:
-        return {"instructions": s["instructions"] + f" No claim {ids[-1].upper()} was found. Ask the user to double-check the ID."}
+        return {"instructions": s["instructions"] + f" No claim {ids[-1].upper()} was found on this customer's policies. Ask the user to double-check the ID."}
     return {"cards": [{"type": "status", **row}],
             "instructions": s["instructions"] + f" Claim {row['id']} status is '{row['status']}'. Explain what that status means using the POLICY."}
 
@@ -412,7 +417,8 @@ async def chat_turn(conv_id: str, user_text: str):
     history = [{"role": m["role"], "content": m["content"]} for m in
                await db.many("select role, content from message where conversation_id=%s order by id", conv_id)]
     s: dict[str, Any] = await graph.ainvoke(
-        {"conv_id": conv_id, "history": history, "user_text": user_text, "memory": conv["state"] or {}, "cards": [], "cost": 0.0}
+        {"conv_id": conv_id, "user_email": conv.get("user_email"), "history": history, "user_text": user_text,
+         "memory": conv["state"] or {}, "cards": [], "cost": 0.0}
     )
     stored_text = SENSITIVE.sub("[redacted]", user_text) if jev.p(s["jev"], "pii_overshare") >= T_PASS else user_text
     await db.execute(

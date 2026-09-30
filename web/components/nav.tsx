@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ThemeProvider } from "next-themes";
 import { useEffect, useState } from "react";
+import { AccountButton } from "@/components/account";
 import { Cta, ThemeToggle } from "@/components/pk";
 import { Toaster } from "@/components/ui/sonner";
 import { cn } from "@/lib/utils";
@@ -70,6 +71,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
               <span className="hidden items-center gap-1.5 rounded-full px-2.5 py-1 text-xs text-muted-foreground lg:inline-flex">
                 <span className="size-1.5 rounded-full bg-jev shadow-[0_0_10px_var(--jev)]" /> Jev 1.13
               </span>
+              <AccountButton />
               <ThemeToggle />
               <div className="hidden md:block"><Cta href="/lab" className="py-1.5 pl-4 text-[13px]">Run a suite</Cta></div>
               {/* hamburger: two lines morph into an X */}

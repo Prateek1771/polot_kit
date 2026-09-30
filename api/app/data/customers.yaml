@@ -1,24 +1,26 @@
-# Demo customers seeded into the `policy` table at API startup (upsert). Names are fictional.
+# Demo customers seeded into the `policy` table at API startup (upsert). Names and emails are fictional.
+# A signed-in InsForge user sees the policies whose holder_email is their account email. Simulated users are
+# signed in as <first>.<last>@coverwise.demo; DEMO_CUSTOMER_EMAILS links real sign-up emails to these customers.
 # plan_id points into catalog.yaml when the plan is listed there.
 policies:
-  - {policy_no: INS-44821, holder_name: Priya Sharma, plan_id: hdfc-ergo-car, category: car, insurer: HDFC ERGO, plan: Comprehensive Car Insurance,
+  - {policy_no: INS-44821, holder_name: Priya Sharma, holder_email: priya.sharma@coverwise.demo, plan_id: hdfc-ergo-car, category: car, insurer: HDFC ERGO, plan: Comprehensive Car Insurance,
      insured_item: "Hyundai i20 Asta 2022 (MH12 AB 4821)", sum_insured_inr: 620000, premium_inr: 14280,
      start_date: 2025-11-02, end_date: 2026-11-01, add_ons: [Zero depreciation, Roadside assistance, Engine protect], ncb_pct: 25}
-  - {policy_no: INS-60012, holder_name: Priya Sharma, plan_id: niva-bupa-reassure-3, category: health, insurer: Niva Bupa, plan: ReAssure 3.0,
+  - {policy_no: INS-60012, holder_name: Priya Sharma, holder_email: priya.sharma@coverwise.demo, plan_id: niva-bupa-reassure-3, category: health, insurer: Niva Bupa, plan: ReAssure 3.0,
      insured_item: "Family floater: Priya (34), Karan (36)", sum_insured_inr: 1000000, premium_inr: 18900,
      start_date: 2026-03-15, end_date: 2027-03-14, add_ons: [Room rent waiver], ncb_pct: 10}
-  - {policy_no: INS-50917, holder_name: Arjun Mehta, plan_id: tata-aig-bike, category: bike, insurer: Tata AIG, plan: Comprehensive Bike Insurance,
+  - {policy_no: INS-50917, holder_name: Arjun Mehta, holder_email: arjun.mehta@coverwise.demo, plan_id: tata-aig-bike, category: bike, insurer: Tata AIG, plan: Comprehensive Bike Insurance,
      insured_item: "Honda Activa 6G 2021 (KA05 JM 0917)", sum_insured_inr: 62000, premium_inr: 1850,
      start_date: 2025-10-11, end_date: 2026-10-10, add_ons: [Zero depreciation], ncb_pct: 20}
-  - {policy_no: INS-31055, holder_name: Neha Kapoor, plan_id: icici-lombard-car, category: car, insurer: ICICI Lombard, plan: Comprehensive Car Insurance,
+  - {policy_no: INS-31055, holder_name: Neha Kapoor, holder_email: neha.kapoor@coverwise.demo, plan_id: icici-lombard-car, category: car, insurer: ICICI Lombard, plan: Comprehensive Car Insurance,
      insured_item: "Maruti Swift VXi 2020 (DL3C CA 1055)", sum_insured_inr: 480000, premium_inr: 11650,
      start_date: 2026-01-20, end_date: 2027-01-19, add_ons: [Roadside assistance], ncb_pct: 35}
-  - {policy_no: INS-77310, holder_name: Rohan Iyer, plan_id: bajaj-car, category: car, insurer: Bajaj General, plan: Comprehensive Car Insurance,
+  - {policy_no: INS-77310, holder_name: Rohan Iyer, holder_email: rohan.iyer@coverwise.demo, plan_id: bajaj-car, category: car, insurer: Bajaj General, plan: Comprehensive Car Insurance,
      insured_item: "Tata Nexon XZ+ 2023 (TN09 BX 7310)", sum_insured_inr: 910000, premium_inr: 17400,
      start_date: 2026-06-01, end_date: 2027-05-31, add_ons: [Zero depreciation, Consumables cover], ncb_pct: 0}
-  - {policy_no: INS-99001, holder_name: Vikram Singh, plan_id: tata-aig-car, category: car, insurer: Tata AIG, plan: Comprehensive Car Insurance,
+  - {policy_no: INS-99001, holder_name: Vikram Singh, holder_email: vikram.singh@coverwise.demo, plan_id: tata-aig-car, category: car, insurer: Tata AIG, plan: Comprehensive Car Insurance,
      insured_item: "Mahindra XUV700 AX7 2024 (HR26 EF 9001)", sum_insured_inr: 1850000, premium_inr: 32600,
      start_date: 2026-04-10, end_date: 2027-04-09, add_ons: [Zero depreciation, Engine protect, Return to invoice], ncb_pct: 0}
-  - {policy_no: INS-82044, holder_name: Ananya Rao, plan_id: hdfc-life-click-2-protect-supreme-plus, category: term, insurer: HDFC Life, plan: Click 2 Protect Supreme Plus,
+  - {policy_no: INS-82044, holder_name: Ananya Rao, holder_email: ananya.rao@coverwise.demo, plan_id: hdfc-life-click-2-protect-supreme-plus, category: term, insurer: HDFC Life, plan: Click 2 Protect Supreme Plus,
      insured_item: "Life assured: Ananya Rao (31), cover till age 65", sum_insured_inr: 10000000, premium_inr: 13200,
      start_date: 2024-08-05, end_date: 2059-08-04, add_ons: [Accidental death benefit], ncb_pct: null}

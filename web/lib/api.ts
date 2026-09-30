@@ -1,30 +1,51 @@
+import { accessToken } from "@/lib/insforge";
+
 export const API = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
+/** HTTP error from our API; status 401 = sign in, 403 = signed in but not allowed. */
+export class ApiError extends Error {
+  constructor(public status: number, message: string) { super(message); }
+}
+
+async function authHeaders(json = false): Promise<Record<string, string>> {
+  const h: Record<string, string> = json ? { "Content-Type": "application/json" } : {};
+  const t = await accessToken();
+  if (t) h.Authorization = `Bearer ${t}`;
+  return h;
+}
+
+async function ok(r: Response) {
+  if (!r.ok) throw new ApiError(r.status, `${r.status} ${await r.text()}`);
+  return r;
+}
+
 export async function get<T = any>(path: string): Promise<T> {
-  const r = await fetch(API + path, { cache: "no-store" });
-  if (!r.ok) throw new Error(`${r.status} ${await r.text()}`);
-  return r.json();
+  return (await ok(await fetch(API + path, { cache: "no-store", headers: await authHeaders() }))).json();
 }
 
 export async function post<T = any>(path: string, body?: unknown): Promise<T> {
-  const r = await fetch(API + path, {
+  return (await ok(await fetch(API + path, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: await authHeaders(true),
     body: body === undefined ? undefined : JSON.stringify(body),
-  });
-  if (!r.ok) throw new Error(`${r.status} ${await r.text()}`);
-  return r.json();
+  }))).json();
+}
+
+/** URL for an EventSource stream (EventSource can't send headers, so the token rides as ?access_token=). */
+export async function streamUrl(path: string): Promise<string> {
+  const t = await accessToken();
+  return API + path + (t ? `${path.includes("?") ? "&" : "?"}access_token=${encodeURIComponent(t)}` : "");
 }
 
 /** POST that returns an SSE stream; calls onEvent for each `data:` JSON payload. */
 export async function postStream(path: string, body: unknown, onEvent: (ev: any) => void, signal?: AbortSignal) {
   const r = await fetch(API + path, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: await authHeaders(true),
     body: JSON.stringify(body),
     signal,
   });
-  if (!r.ok || !r.body) throw new Error(`${r.status} ${await r.text()}`);
+  if (!r.ok || !r.body) throw new ApiError(r.status, `${r.status} ${await r.text()}`);
   const reader = r.body.pipeThrough(new TextDecoderStream()).getReader();
   let buf = "";
   for (;;) {
@@ -56,6 +77,7 @@ export type Card =
   | { type: "claim"; claim_id: string; fields: Record<string, string> }
   | { type: "status"; id: string; status: string; incident_date: string }
   | { type: "handoff" }
+  | { type: "signin" }
   | PolicyCard
   | { type: "plans"; category: string; budget_inr: number | null; within_budget: boolean; as_of: string; plans: PlanView[] }
   | { type: "compare"; as_of: string; plans: PlanView[] };
@@ -86,3 +108,5 @@ export type RunStats = {
   pending: number; verdict: string; auto_graded: number; total_criteria: number;
 };
 export type Run = { id: string; label: string; status: string; total: number; target: { prompt_variant?: string }; created_at: string; stats: RunStats };
+
+export type Me = { user: { id: string; email: string } | null; lab: boolean };

@@ -1,4 +1,4 @@
-from app.bot import SENSITIVE, mask, named_plans, normalise_name, pick_plans, route
+from app.bot import SENSITIVE, demo_email, mask, named_plans, normalise_email, pick_plans, route
 from app.judge import triage
 
 
@@ -18,8 +18,9 @@ def test_route_guards_win():
 
 
 def test_route_intents():
-    assert route(ans("new_claim"), {}) == "new_claim"
-    assert route(ans("claim_status"), {}) == "status"
+    verified = {"customer": {"name": "Neha Kapoor"}}
+    assert route(ans("new_claim"), verified) == "new_claim"
+    assert route(ans("claim_status"), verified) == "status"
     assert route(ans("coverage_question"), {}) == "coverage"
     assert route(ans("coverage_question", conf=0.3), {}) == "clarify"
     assert route(ans("other"), {}) == "clarify"
@@ -42,10 +43,11 @@ def test_redaction_and_mask():
 
 
 def test_route_identify_flow():
-    assert route(ans("my_policy"), {}) == "identify"
-    assert route(ans("other"), {"awaiting_name": True}) == "identify"  # "Priya Sharma" typed after we asked
+    # own policies, claims and claim status need a verified (signed-in) customer first
+    for intent in ("my_policy", "new_claim", "claim_status"):
+        assert route(ans(intent), {}) == "identify"
     assert route(ans("my_policy"), {"customer": {"name": "Priya Sharma"}}) == "my_policy"
-    assert route(ans("shop_plans"), {"awaiting_name": True}) == "shop"  # can leave the lookup to browse plans
+    assert route(ans("shop_plans"), {}) == "shop"  # shoppers never need an account
 
 
 def test_route_shop_flow():
@@ -80,7 +82,8 @@ def test_named_plans_and_name():
     assert [p["id"] for p in named_plans(PLANS, "Motor Protect or ReAssure 2.0?")] == ["b", "d"]
     # "Car Secure" is shared by two insurers so it isn't a distinctive name; the insurer alias "bajaj" still matches
     assert [p["id"] for p in named_plans(PLANS, "car secure from bajaj vs tata aig", "car")] == ["c", "f"]
-    assert normalise_name("  Priya   SHARMA ") == "priya sharma"
+    assert normalise_email("  Priya.Sharma@CoverWise.demo ") == "priya.sharma@coverwise.demo"
+    assert demo_email("Priya  Sharma") == "priya.sharma@coverwise.demo" and demo_email(None) is None
 
 
 async def test_jev_decides_through_litellm(monkeypatch):
@@ -120,3 +123,44 @@ async def test_keepalive_ping_survives_failures():
     async with httpx.AsyncClient(transport=httpx.MockTransport(handler)) as c:
         out = await ping(c, ["https://api.example/health", "https://down.example/"])
     assert out == {"https://api.example/health": 200, "https://down.example/": "ConnectError"}
+
+
+def test_insforge_rawsql_adapter():
+    """%s -> $n, and rawsql's string-typed bigint/numeric and midnight-UTC dates come back as Python types."""
+    from datetime import date
+
+    from app.db import rows_from, to_pg
+
+    assert to_pg("select * from t where a=%s and b = any(%s) limit %s") == "select * from t where a=$1 and b = any($2) limit $3"
+    body = {"rows": [{"n": "3", "cost": "0.0012", "d": "2026-11-01T00:00:00.000Z", "j": {"x": 1}, "s": "x", "nul": None}],
+            "fields": [{"name": "n", "dataTypeID": 20}, {"name": "cost", "dataTypeID": 1700}, {"name": "d", "dataTypeID": 1082},
+                       {"name": "j", "dataTypeID": 3802}, {"name": "s", "dataTypeID": 25}, {"name": "nul", "dataTypeID": 20}]}
+    assert rows_from(body) == [{"n": 3, "cost": 0.0012, "d": date(2026, 11, 1), "j": {"x": 1}, "s": "x", "nul": None}]
+    assert rows_from({"rows": [], "fields": []}) == []
+
+
+async def test_lab_routes_need_staff(monkeypatch):
+    """No token -> 401; signed in but not on LAB_ADMIN_EMAILS -> 403; staff -> the user."""
+    import pytest
+    from fastapi import HTTPException
+    from starlette.requests import Request
+
+    from app import main
+
+    users = {"staff-token": {"id": "u1", "email": "ops@coverwise.demo"}, "cust-token": {"id": "u2", "email": "priya.sharma@coverwise.demo"}}
+
+    async def fake_verify(token):
+        return users.get(token)
+
+    monkeypatch.setattr(main, "verify_token", fake_verify)
+    monkeypatch.setattr(main, "LAB_ADMIN_EMAILS", {"ops@coverwise.demo"})
+
+    def req(headers=(), query=b""):
+        return Request({"type": "http", "headers": [(k.encode(), v.encode()) for k, v in headers], "query_string": query})
+
+    for r, code in ((req(), 401), (req([("authorization", "Bearer cust-token")]), 403)):
+        with pytest.raises(HTTPException) as e:
+            await main.lab_user(r)
+        assert e.value.status_code == code
+    assert (await main.lab_user(req([("authorization", "Bearer staff-token")])))["id"] == "u1"
+    assert (await main.lab_user(req(query=b"access_token=staff-token")))["id"] == "u1"  # EventSource path

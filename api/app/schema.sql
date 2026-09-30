@@ -1,4 +1,4 @@
-create extension if not exists pgcrypto;
+-- gen_random_uuid() is built in (Postgres 13+). Runs as InsForge project_admin via db.open_pool(init_schema=True).
 
 create table if not exists run (
   id uuid primary key default gen_random_uuid(),
@@ -60,7 +60,7 @@ create table if not exists claim (
   created_at timestamptz not null default now()
 );
 
--- policies sold through CoverWise; customers are looked up by full name
+-- policies sold through CoverWise; a signed-in InsForge user sees the policies whose holder_email matches theirs
 create table if not exists policy (
   policy_no text primary key,
   holder_name text not null,
@@ -78,3 +78,21 @@ create table if not exists policy (
   status text not null default 'active'
 );
 create index if not exists policy_holder on policy(lower(holder_name));
+
+-- InsForge auth: who owns a live conversation, and which login email a policy belongs to
+alter table conversation add column if not exists user_id uuid;
+alter table conversation add column if not exists user_email text;
+alter table policy add column if not exists holder_email text;
+create index if not exists policy_holder_email on policy(lower(holder_email));
+
+-- Only the API (InsForge project_admin, which owns these tables and so bypasses RLS) may touch app data.
+-- InsForge's REST API grants anon/authenticated broad DML on public tables by default and the anon key is public
+-- (it ships in the web bundle), so: RLS on with no policies, and the default grants revoked.
+do $$
+declare t text;
+begin
+  foreach t in array array['run', 'conversation', 'message', 'score', 'claim', 'policy'] loop
+    execute format('alter table public.%I enable row level security', t);
+    execute format('revoke all on public.%I from anon, authenticated', t);
+  end loop;
+end $$;

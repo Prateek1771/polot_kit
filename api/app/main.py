@@ -1,12 +1,13 @@
 import asyncio
 import json
 import os
+import time
 from contextlib import asynccontextmanager
 from typing import Literal
 
 import httpx
 from arq import create_pool
-from fastapi import FastAPI, HTTPException
+from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
@@ -48,19 +49,69 @@ async def keepalive(urls: list[str], every: int):
             await ping(c, urls)
 
 
+# ---------------- InsForge auth ----------------
+# The web app signs users in with InsForge and sends the access token as a Bearer header (or ?access_token= for
+# EventSource, which can't set headers). Tokens are checked against InsForge's session endpoint and cached briefly.
+LAB_ADMIN_EMAILS = {e.strip().lower() for e in os.getenv("LAB_ADMIN_EMAILS", "").split(",") if e.strip()}
+SESSION_TTL = 60
+_sessions: dict[str, tuple[float, dict | None]] = {}
+
+
+def bearer(request: Request) -> str | None:
+    h = request.headers.get("authorization", "")
+    return h[7:].strip() if h.lower().startswith("bearer ") else request.query_params.get("access_token")
+
+
+async def verify_token(token: str | None) -> dict | None:
+    """InsForge access token -> {"id", "email"} of a signed-in user, else None (anon key, expired, bogus)."""
+    if not token:
+        return None
+    now = time.monotonic()
+    if (hit := _sessions.get(token)) and hit[0] > now:
+        return hit[1]
+    try:
+        async with httpx.AsyncClient(timeout=10) as c:
+            r = await c.get(f"{db.INSFORGE_URL}/api/auth/sessions/current", headers={"Authorization": f"Bearer {token}"})
+    except httpx.HTTPError:
+        return None  # not cached: a network blip shouldn't sign the user out for a minute
+    u = (r.json().get("user") if r.status_code == 200 else None) or {}
+    user = {"id": u["id"], "email": u["email"].strip().lower()} if u.get("id") and u.get("email") else None
+    if len(_sessions) > 5000:  # ponytail: crude bound on the cache; a real LRU if this ever matters
+        _sessions.clear()
+    _sessions[token] = (now + SESSION_TTL, user)
+    return user
+
+
+async def optional_user(request: Request) -> dict | None:
+    return await verify_token(bearer(request))
+
+
+async def lab_user(request: Request) -> dict:
+    """Test Lab and review data holds every customer's transcripts: signed-in staff (LAB_ADMIN_EMAILS) only."""
+    user = await optional_user(request)
+    if not user:
+        raise HTTPException(401, "sign in required")
+    if user["email"] not in LAB_ADMIN_EMAILS:
+        raise HTTPException(403, "this account is not on the Test Lab staff list")
+    return user
+
+
+LAB = [Depends(lab_user)]
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await db.open_pool(init_schema=True)
     for p in CUSTOMERS:  # demo customers for the "my policy" lookup; upsert so edits to the YAML apply
         await db.execute(
-            """insert into policy (policy_no, holder_name, plan_id, category, insurer, plan, insured_item, sum_insured_inr,
+            """insert into policy (policy_no, holder_name, holder_email, plan_id, category, insurer, plan, insured_item, sum_insured_inr,
                                    premium_inr, start_date, end_date, add_ons, ncb_pct)
-               values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
-               on conflict (policy_no) do update set holder_name=excluded.holder_name, plan_id=excluded.plan_id,
+               values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+               on conflict (policy_no) do update set holder_name=excluded.holder_name, holder_email=excluded.holder_email, plan_id=excluded.plan_id,
                  insurer=excluded.insurer, plan=excluded.plan, insured_item=excluded.insured_item,
                  sum_insured_inr=excluded.sum_insured_inr, premium_inr=excluded.premium_inr, start_date=excluded.start_date,
                  end_date=excluded.end_date, add_ons=excluded.add_ons, ncb_pct=excluded.ncb_pct""",
-            p["policy_no"], p["holder_name"], p.get("plan_id"), p["category"], p["insurer"], p["plan"], p.get("insured_item"),
+            p["policy_no"], p["holder_name"], p.get("holder_email"), p.get("plan_id"), p["category"], p["insurer"], p["plan"], p.get("insured_item"),
             p.get("sum_insured_inr"), p.get("premium_inr"), p["start_date"], p["end_date"], db.j(p.get("add_ons", [])), p.get("ncb_pct"),
         )
     # demo claim so "check status" works out of the box
@@ -72,10 +123,21 @@ async def lifespan(app: FastAPI):
     await resolve_langfuse_project()
     app.state.arq = await create_pool(REDIS)
     pinger = asyncio.create_task(keepalive(KEEPALIVE_URLS, KEEPALIVE_SECONDS)) if KEEPALIVE_URLS and KEEPALIVE_SECONDS else None
+    # Single-container deploy (start.sh): run the arq worker in this process so LiteLLM & co. load once, which fits a
+    # 512 MB machine. Compose runs the worker as its own service instead.
+    worker = None
+    if os.getenv("INPROCESS_WORKER") == "1":
+        from arq.worker import create_worker
+        from .worker import WorkerSettings
+        worker = create_worker(WorkerSettings, on_startup=None, handle_signals=False)  # the API already opened the DB client
+        asyncio.create_task(worker.async_run())
     yield
+    if worker:
+        await worker.close()
     if pinger:
         pinger.cancel()
     await app.state.arq.close()
+    await db.close_pool()
 
 
 app = FastAPI(title="PilotKit", lifespan=lifespan)
@@ -117,17 +179,22 @@ class ChatIn(BaseModel):
 
 
 @app.post("/chat")
-async def chat(body: ChatIn):
+async def chat(body: ChatIn, user: dict | None = Depends(optional_user)):
     conv_id = body.conversation_id
     if conv_id:
-        conv = await db.one("select status from conversation where id=%s", conv_id)
+        conv = await db.one("select status, user_email from conversation where id=%s", conv_id)
         if not conv:
             raise HTTPException(404, "conversation not found")
         if conv["status"] != "open":
             raise HTTPException(409, "conversation has ended")
+        if conv["user_email"] and (not user or user["email"] != conv["user_email"]):
+            raise HTTPException(403, "this conversation belongs to another account")
+        if user and not conv["user_email"]:  # signed in mid-chat (after the sign-in card): the chat is theirs now
+            await db.execute("update conversation set user_id=%s, user_email=%s where id=%s", user["id"], user["email"], conv_id)
     else:
         conv_id = str((await db.one(
-            "insert into conversation (source, prompt_variant) values ('live', %s) returning id", body.prompt_variant))["id"])
+            "insert into conversation (source, prompt_variant, user_id, user_email) values ('live', %s, %s, %s) returning id",
+            body.prompt_variant, user and user["id"], user and user["email"]))["id"])
 
     async def gen():
         yield {"type": "conversation", "id": conv_id}
@@ -147,7 +214,7 @@ async def end_conversation(conv_id: str):
     return {"ok": True}
 
 
-@app.get("/conversations")
+@app.get("/conversations", dependencies=LAB)
 async def list_conversations(source: str | None = None, run_id: str | None = None, limit: int = 100):
     return await db.many(
         f"""select c.id, c.source, c.run_id, c.persona, c.prompt_variant, c.status, c.outcome, c.quality_score,
@@ -163,7 +230,7 @@ async def list_conversations(source: str | None = None, run_id: str | None = Non
     )
 
 
-@app.get("/conversations/{conv_id}")
+@app.get("/conversations/{conv_id}", dependencies=LAB)
 async def get_conversation(conv_id: str):
     conv = await db.one("select * from conversation where id=%s", conv_id)
     if not conv:
@@ -179,7 +246,7 @@ async def get_conversation(conv_id: str):
 
 # ---------------- test lab ----------------
 
-@app.get("/suite")
+@app.get("/suite", dependencies=LAB)
 async def suite():
     return {
         "name": SUITE["name"], "title": SUITE["title"],
@@ -195,7 +262,7 @@ class RunIn(BaseModel):
     repeats: int = Field(default=1, ge=1, le=5)
 
 
-@app.post("/runs")
+@app.post("/runs", dependencies=LAB)
 async def create_run(body: RunIn):
     r = await db.one("insert into run (suite, target, label) values (%s,%s,%s) returning id",
                      SUITE["name"], db.j({"type": "claimchat", "prompt_variant": body.prompt_variant}), body.label)
@@ -211,7 +278,7 @@ async def list_runs():
     return runs
 
 
-@app.get("/runs/{run_id}/events")
+@app.get("/runs/{run_id}/events", dependencies=LAB)
 async def run_events(run_id: str):
     async def gen():
         # ponytail: DB polling at 1s instead of Redis pub/sub; fine for a handful of viewers
@@ -273,7 +340,7 @@ async def run_stats(run_id) -> dict:
             "auto_graded": sum(c["passed"] + c["failed"] - c["human"] for c in crit), "total_criteria": decided + pending}
 
 
-@app.get("/runs/{run_id}/report")
+@app.get("/runs/{run_id}/report", dependencies=LAB)
 async def report(run_id: str):
     run = await db.one("select * from run where id=%s", run_id)
     if not run:
@@ -297,7 +364,7 @@ async def compare(a: str, b: str):
     return {"a": {"id": a, **sa}, "b": {"id": b, **sb}, "criteria": list(rows.values())}
 
 
-@app.get("/reviews")
+@app.get("/reviews", dependencies=LAB)
 async def reviews(run_id: str | None = None):
     return await db.many(
         """select s.*, c.persona, c.source, c.run_id
@@ -312,7 +379,7 @@ class LabelIn(BaseModel):
     label: Literal["pass", "fail"]
 
 
-@app.post("/reviews/{conv_id}/{criterion}")
+@app.post("/reviews/{conv_id}/{criterion}", dependencies=LAB)
 async def label(conv_id: str, criterion: str, body: LabelIn):
     r = await db.one("update score set human_label=%s where conversation_id=%s and criterion=%s returning criterion",
                      body.label, conv_id, criterion)
@@ -321,7 +388,7 @@ async def label(conv_id: str, criterion: str, body: LabelIn):
     return {"ok": True}
 
 
-@app.get("/calibration")
+@app.get("/calibration", dependencies=LAB)
 async def calibration():
     bins = await db.many(
         """select least(floor(prob*5), 4)::int as bin, count(*) n, avg(prob) avg_prob,
@@ -342,6 +409,11 @@ async def calibration():
 async def catalog():
     keys = ("id", "category", "insurer", "plan", "claim_settlement_ratio")
     return {"as_of": CATALOG.get("as_of"), "plans": [{k: p.get(k) for k in keys} for p in CATALOG["plans"]]}
+
+
+@app.get("/me")
+async def me(user: dict | None = Depends(optional_user)):
+    return {"user": user, "lab": bool(user and user["email"] in LAB_ADMIN_EMAILS)}
 
 
 @app.get("/health")

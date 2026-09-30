@@ -1,9 +1,10 @@
 "use client";
 
 import {
-  Airplane, ArrowsLeftRight, CalendarDots, Car, Check, CheckCircle, CheckSquare, ClipboardText, Headset, Heartbeat, Moped, ShieldCheck,
-  Umbrella, X,
+  Airplane, ArrowsLeftRight, CalendarDots, Car, Check, CheckCircle, CheckSquare, ClipboardText, Headset, Heartbeat, LockKey, Moped, ShieldCheck,
+  SignIn, Umbrella, X,
 } from "@phosphor-icons/react";
+import Link from "next/link";
 import { Fragment } from "react";
 import { inr, label } from "@/components/pk";
 import { Button } from "@/components/ui/button";
@@ -39,6 +40,20 @@ export function ChatCard({ card, onSend, disabled }: { card: Card; onSend: (text
         <div className="flex items-center gap-3 rounded-[1.25rem] bg-warning/[0.07] p-4 text-sm ring-1 ring-warning/25">
           <Headset className="size-6 shrink-0 text-warning" aria-hidden />
           <div><div className="font-medium">Connecting you to a human advisor</div><div className="text-xs text-muted-foreground">Available 9am–9pm IST, Mon–Sat</div></div>
+        </div>
+      );
+    case "signin":
+      // ponytail: the chat restarts after sign-in (conversation state isn't carried across the redirect)
+      return (
+        <div className="flex flex-wrap items-center gap-3 rounded-[1.25rem] bg-primary/[0.06] p-4 text-sm ring-1 ring-primary/20">
+          <LockKey className="size-6 shrink-0 text-primary" aria-hidden />
+          <div className="min-w-0 flex-1">
+            <div className="font-medium">Sign in to see your policies and claims</div>
+            <div className="text-xs text-muted-foreground">Your account email is matched to your CoverWise policies.</div>
+          </div>
+          <Link href="/login?next=/chat" className="inline-flex items-center gap-1.5 rounded-full bg-ink px-4 py-2 text-xs font-medium text-ink-foreground">
+            <SignIn className="size-4" aria-hidden /> Sign in
+          </Link>
         </div>
       );
     case "status":
